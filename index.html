@@ -1368,21 +1368,6 @@
             <!-- ================= 左侧设备区域 (设备类型下拉 + 模糊查询 + 全选小计 + 完整6项卡片) ================= -->
             <div class="pc-left-sidebar">
                 
-                <!-- 设备类型单选下拉 + 模糊查询框 -->
-                <div class="left-filter-area">
-                    <!-- 设备类型下拉单选 -->
-                    <select class="left-select-input" id="devTypeSelectFilter" onchange="handleDevTypeChange(this.value)">
-                        <option value="ALL">全部类型</option>
-                        <option value="室内质控设备">室内质控设备</option>
-                        <option value="PCR基因扩增仪">PCR基因扩增仪</option>
-                        <option value="超净工作台">超净工作台</option>
-                        <option value="医用低温箱">医用低温箱</option>
-                        <option value="冷藏箱">冷藏箱</option>
-                        <option value="紫外灯车">紫外灯车</option>
-                        <option value="组织脱水机">组织脱水机</option>
-                    </select>
-                    <input type="text" class="left-search-input" id="devKeywordSearch" placeholder="输入设备名称、编号搜索..." oninput="handleSearchInput()">
-                </div>
 
                 <!-- 全选与数值小计工具条 (带清空交互) -->
                 <div class="left-subtotal-toolbar">
@@ -1435,22 +1420,6 @@
                         <!-- 由 JS 渲染 -->
                     </div>
 
-                    <!-- 附件资料区域 (贴近真实医学/检验设备管理场景：现场原始巡检单、高拍仪扫描件、质控记录单) -->
-                    <div class="attachment-section-wrap" id="attachmentSectionWrap">
-                        <div class="section-title-bar">
-                            <span class="section-title-text">附件资料</span>
-                            <span class="section-title-sub">（支持上传纸质巡检单、温湿度记录纸高拍仪扫查件、仪器质控凭证等）</span>
-                        </div>
-                        <div class="upload-actions-bar">
-                            <button type="button" class="btn-action-primary" onclick="mockCameraScan()">连接高拍仪</button>
-                            <button type="button" class="btn-action-primary" onclick="mockSelectFile()">选择文件</button>
-                        </div>
-                        
-                        <div class="uploaded-files-container" id="uploadedFilesContainer">
-                            <!-- 由 JS 渲染文件列表 -->
-                        </div>
-                    </div>
-
                 </div>
 
                 <!-- 底部操作按钮栏：仅保留【确定】与【取消】(未选设备时整栏隐藏) -->
@@ -1487,6 +1456,7 @@
                 devType: "超净工作台",
                 assetCode: "FA-2025-0016",
                 devCode: "PCR-CLEAN-301",
+                workstation: "分子生物学工作台",
                 templateType: "tpl_cleanbench",
                 templateName: "超净工作台运行记录",
                 frequency: "使用时需要",
@@ -1498,6 +1468,7 @@
                 devType: "超净工作台",
                 assetCode: "FA-2024-0021",
                 devCode: "CJ-01-01",
+                workstation: "无菌接种工作台",
                 templateType: "tpl_cleanbench",
                 templateName: "超净工作台运行记录",
                 frequency: "使用时需要",
@@ -1509,6 +1480,7 @@
                 devType: "医用低温箱",
                 assetCode: "FA-2024-0044",
                 devCode: "DW-04-004",
+                workstation: "试剂冷链工作台",
                 templateType: "tpl_fridge",
                 templateName: "医用低温/冷藏箱温湿度监控记录",
                 frequency: "每日两次",
@@ -1520,6 +1492,7 @@
                 devType: "冷藏箱",
                 assetCode: "FA-2024-0055",
                 devCode: "LC-05-005",
+                workstation: "标本暂存工作台",
                 templateType: "tpl_fridge",
                 templateName: "医用低温/冷藏箱温湿度监控记录",
                 frequency: "每日两次",
@@ -1531,6 +1504,7 @@
                 devType: "PCR基因扩增仪",
                 assetCode: "FA-2025-0003",
                 devCode: "PCR-3S-003",
+                workstation: "基因扩增工作台",
                 templateType: "tpl_pcr",
                 templateName: "PCR基因扩增仪运行记录",
                 frequency: "使用时需要",
@@ -1542,6 +1516,7 @@
                 devType: "紫外灯车",
                 assetCode: "FA-2023-0094",
                 devCode: "LJ-01-001",
+                workstation: "消杀巡检工作台",
                 templateType: "tpl_uv",
                 templateName: "紫外线消毒照射记录",
                 frequency: "每日一次",
@@ -1553,6 +1528,7 @@
                 devType: "组织脱水机",
                 assetCode: "FA-DIFF-999",
                 devCode: "DEV-TS-001",
+                workstation: "病理制片工作台",
                 templateType: "tpl_pathology",
                 templateName: "病理组织脱水/包埋使用记录",
                 frequency: "每批次一次",
@@ -1564,6 +1540,7 @@
                 devType: "PCR基因扩增仪",
                 assetCode: "FA-2025-9001",
                 devCode: "GENE-9001",
+                workstation: "测序质控工作台",
                 templateType: "tpl_single",
                 templateName: "精密质控专属校准",
                 frequency: "每月一次",
@@ -1669,30 +1646,12 @@
         }
 
         // 设备类型单选下拉过滤
-        function handleDevTypeChange(val) {
-            currentFilterType = val;
-            renderDeviceCards();
-            updateSubtotalInfo();
-        }
-
-        // 模糊查询输入过滤
-        function handleSearchInput() {
-            searchKeyword = document.getElementById("devKeywordSearch").value.trim().toLowerCase();
-            renderDeviceCards();
-            updateSubtotalInfo();
-        }
-
-        // 渲染左侧设备卡片 (纯粹展示4大项信息：设备名称、设备类型、固定资产编号、设备编号)
+        // 渲染左侧设备卡片 (展示5大项信息：设备名称、固定资产编号、设备编号、所属工作台、设备类型)
         function renderDeviceCards() {
             const container = document.getElementById("deviceCardListContainer");
+            if (!container) return;
 
-            const filtered = mockDeviceDatabase.filter(d => {
-                const matchType = (currentFilterType === "ALL") || (d.devType === currentFilterType);
-                const matchKw = (!searchKeyword) || (d.name.toLowerCase().includes(searchKeyword) || d.devCode.toLowerCase().includes(searchKeyword));
-                return matchType && matchKw;
-            });
-
-            container.innerHTML = filtered.map(dev => {
+            container.innerHTML = mockDeviceDatabase.map(dev => {
                 const isSelected = selectedDeviceIds.includes(dev.id);
                 return `
                     <div class="pc-dev-card ${isSelected ? 'active' : ''}" 
@@ -1706,13 +1665,31 @@
                             </svg>
                         </div>
 
-                        <!-- 1. 设备名称 (加粗加黑 14px) -->
+                        <!-- 1. 设备名称 (加粗加黑 15px) -->
                         <div class="dev-card-name" title="${dev.name}">${dev.name}</div>
                         
-                        <!-- 2. 设备编号 (只展示名称与编号) -->
+                        <!-- 2. 固定资产编号 -->
+                        <div class="dev-card-field-row">
+                            <span class="dev-card-field-label">固定资产编号:</span>
+                            <span class="dev-card-field-val">${dev.assetCode}</span>
+                        </div>
+
+                        <!-- 3. 设备编号 -->
                         <div class="dev-card-field-row">
                             <span class="dev-card-field-label">设备编号:</span>
                             <span class="dev-card-field-val">${dev.devCode}</span>
+                        </div>
+
+                        <!-- 4. 所属工作台 -->
+                        <div class="dev-card-field-row">
+                            <span class="dev-card-field-label">所属工作台:</span>
+                            <span class="dev-card-field-val">${dev.workstation || '基础工作台'}</span>
+                        </div>
+
+                        <!-- 5. 设备类型 -->
+                        <div class="dev-card-field-row">
+                            <span class="dev-card-field-label">设备类型:</span>
+                            <span class="dev-card-field-val">${dev.devType}</span>
                         </div>
                     </div>
                 `;
