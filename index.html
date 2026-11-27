@@ -1112,6 +1112,224 @@
         .shake-animation {
             animation: shake 0.35s ease-in-out;
         }
+    
+        /* ================= 1:1 真机两栏 Cell 表单系统 ================= */
+        .pad-form-grid-2col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            column-gap: 28px;
+            row-gap: 0;
+            width: 100%;
+        }
+
+        .pad-column-left, .pad-column-right {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+
+        /* 扁平 Cell 行组件 */
+        .pad-cell-row {
+            display: flex;
+            align-items: center;
+            min-height: 48px;
+            padding: 4px 0;
+            border-bottom: 1px solid #f2f3f5;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        .pad-cell-row.align-top {
+            align-items: flex-start;
+            padding-top: 10px;
+        }
+
+        /* 标签 (无冒号，必填红星号) */
+        .pad-cell-label {
+            width: 100px;
+            min-width: 100px;
+            font-size: 14px;
+            color: #1d2129;
+            line-height: 1.4;
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .pad-cell-label.required::before {
+            content: "* ";
+            color: #f53f3f !important;
+            font-weight: bold;
+            margin-right: 2px;
+        }
+
+        /* 控件区域 */
+        .pad-cell-control {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            min-width: 0;
+            gap: 8px;
+        }
+
+        /* 扁平无边框输入框 */
+        .pad-flat-input {
+            flex: 1;
+            border: none;
+            outline: none;
+            background: transparent;
+            font-size: 14px;
+            color: #1d2129;
+            padding: 0;
+            line-height: 24px;
+            width: 100%;
+        }
+
+        .pad-flat-input::placeholder {
+            color: #86909c;
+        }
+
+        /* 浅灰圆形清除叉图标 (真机 1:1) */
+        .pad-clear-circle {
+            width: 16px;
+            height: 16px;
+            background: #c9cdd4;
+            color: #ffffff;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            cursor: pointer;
+            flex-shrink: 0;
+            user-select: none;
+            transition: background 0.15s;
+        }
+
+        .pad-clear-circle:hover {
+            background: #86909c;
+        }
+
+        /* 多选向右箭头 > (真机 1:1) */
+        .pad-arrow-right {
+            color: #86909c;
+            font-size: 16px;
+            font-weight: 300;
+            flex-shrink: 0;
+            cursor: pointer;
+            padding-left: 6px;
+        }
+
+        /* 单选选项组 (真机 1:1 原生圆形蓝底白勾，无胶囊背景) */
+        .pad-radio-group {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            flex: 1;
+        }
+
+        .pad-radio-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            color: #1d2129;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .pad-radio-item input[type="radio"] {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border: 1.5px solid #c9cdd4;
+            border-radius: 50%;
+            outline: none;
+            margin: 0;
+            cursor: pointer;
+            background: #ffffff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s;
+            flex-shrink: 0;
+        }
+
+        .pad-radio-item input[type="radio"]:checked {
+            background: #165dff;
+            border-color: #165dff;
+            position: relative;
+        }
+
+        .pad-radio-item input[type="radio"]:checked::after {
+            content: "";
+            width: 4px;
+            height: 8px;
+            border: solid #ffffff;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+            position: absolute;
+            top: 1px;
+            left: 4.5px;
+        }
+
+        /* 清空按钮：蓝色文字带下划线，无边框背景 */
+        .pad-clear-btn {
+            color: #165dff !important;
+            font-size: 13px;
+            text-decoration: underline !important;
+            cursor: pointer;
+            user-select: none;
+            white-space: nowrap;
+            margin-left: 8px;
+            flex-shrink: 0;
+            background: transparent !important;
+            border: none !important;
+        }
+
+        .pad-clear-btn:hover {
+            color: #0e42d2 !important;
+        }
+
+        /* 顶部文字标签说明条 (真机 1:1) */
+        .pad-banner-tag-box {
+            background: #f2f3f5;
+            border-radius: 4px;
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .pad-tag-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .pad-btn-copy {
+            background: #165dff;
+            color: #ffffff;
+            border: none;
+            border-radius: 2px;
+            padding: 2px 8px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .pad-btn-paste {
+            background: #00b42a;
+            color: #ffffff;
+            border: none;
+            border-radius: 2px;
+            padding: 2px 8px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
     </style>
 </head>
 
@@ -1255,7 +1473,7 @@
                 <path d="M8 3.8v5.2M8 11.2v1" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round"/>
             </svg>
         </div>
-        <span class="toast-msg-text" id="toastMsg">请选择相同记录模板的设备</span>
+        <span class="toast-msg-text" id="toastMsg"></span>
         <button type="button" class="toast-close-btn" title="关闭提示" onclick="hideToast()">×</button>
     </div>
 
@@ -1481,17 +1699,7 @@
                         <!-- 1. 设备名称 (加粗加黑 14px) -->
                         <div class="dev-card-name" title="${dev.name}">${dev.name}</div>
                         
-                        <!-- 2. 设备类型 -->
-                        <div class="dev-card-field-row">
-                            <span class="dev-card-field-label">设备类型:</span>
-                            <span class="dev-card-field-val">${dev.devType}</span>
-                        </div>
-                        <!-- 3. 固定资产编号 -->
-                        <div class="dev-card-field-row">
-                            <span class="dev-card-field-label">固定资产编号:</span>
-                            <span class="dev-card-field-val">${dev.assetCode || '-'}</span>
-                        </div>
-                        <!-- 4. 设备编号 (严格放在固定资产编号下方) -->
+                        <!-- 2. 设备编号 (只展示名称与编号) -->
                         <div class="dev-card-field-row">
                             <span class="dev-card-field-label">设备编号:</span>
                             <span class="dev-card-field-val">${dev.devCode}</span>
@@ -1520,9 +1728,8 @@
             if (!targetDev) return;
 
             if (currentEntryMode === "single") {
-                // 【单条录入】模式：点击任意设备卡片，直接平滑切换为当前唯一选中的目标设备
+                // 【单条录入】模式：只支持切换选一个设备，点击任意卡片直接平滑切换为目标设备
                 if (selectedDeviceIds.length === 1 && selectedDeviceIds[0] === deviceId) {
-                    // 再次点击同一张卡片，反选清空为 0 台
                     selectedDeviceIds = [];
                     lockedTemplateType = null;
                 } else {
@@ -1530,13 +1737,11 @@
                     lockedTemplateType = targetDev.templateType;
                 }
             } else {
-                // 【一键批量】模式：支持多选勾选与反选
+                // 【一键批量】模式：支持多选勾选
                 const isAlreadySelected = selectedDeviceIds.includes(deviceId);
                 if (isAlreadySelected) {
                     selectedDeviceIds = selectedDeviceIds.filter(id => id !== deviceId);
-                    if (selectedDeviceIds.length === 0) {
-                        lockedTemplateType = null;
-                    }
+                    if (selectedDeviceIds.length === 0) lockedTemplateType = null;
                 } else {
                     selectedDeviceIds.push(deviceId);
                     if (!lockedTemplateType) lockedTemplateType = targetDev.templateType;
@@ -1933,126 +2138,143 @@
                     </div>
                 `;
             } else {
-                // 默认 / PCR超净工作台 (完整复刻真机截图2与截图3经典字典组件体系)
+                // 默认 / PCR超净工作台 (两栏 Cell 布局，1:1 真机截图组件样式)
                 container.innerHTML = `
-                    <div class="form-grid-3col">
-                        <div class="form-item">
-                            <label class="form-label required">操作时间</label>
-                            <div class="form-control-wrap">
-                                <input type="text" class="form-input" id="field_opt_time" value="${timeStr}">
-                            </div>
+                    <!-- 顶部文字标签说明条 (真机截图 1:1) -->
+                    <div class="pad-banner-tag-box">
+                        <div style="display:flex; align-items:center;">
+                            <span style="color:#4e5969; font-size:14px; width:95px; flex-shrink:0;">文字标签</span>
+                            <span style="color:#1d2129; font-size:14px;">文字标签内容1234567890</span>
                         </div>
-                        <div class="form-item">
-                            <label class="form-label required">操作人</label>
-                            <div class="form-control-wrap">
-                                <input type="text" class="form-input" id="field_operator" value="李珂02">
-                            </div>
-                        </div>
-                        <div class="form-item">
-                            <label class="form-label">文本框</label>
-                            <div class="form-control-wrap">
-                                <input type="text" class="form-input" id="field_text1" value="文本框默认值" placeholder="请输入内容">
-                            </div>
+                        <div class="pad-tag-actions">
+                            <button type="button" class="pad-btn-copy" onclick="showToast('已复制文字标签内容', 'success')">复制</button>
+                            <button type="button" class="pad-btn-paste" onclick="showToast('已粘贴内容', 'success')">粘贴</button>
                         </div>
                     </div>
 
-                    <div class="form-grid-3col">
-                        <div class="form-item">
-                            <label class="form-label">日期框</label>
-                            <div class="form-control-wrap">
-                                <input type="date" class="form-input" id="field_date1" value="${dateStr}">
-                            </div>
-                        </div>
-                        <div class="form-item">
-                            <label class="form-label">数字框</label>
-                            <div class="form-control-wrap">
-                                <input type="number" class="form-input" id="field_num1" value="8" min="0" max="999">
-                            </div>
-                        </div>
-                        <div class="form-item">
-                            <label class="form-label">下拉框</label>
-                            <div class="form-control-wrap">
-                                <select class="form-select" id="field_select1">
-                                    <option value="下拉值1" selected>下拉值1</option>
-                                    <option value="下拉值2">下拉值2</option>
-                                    <option value="下拉值3">下拉值3</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-grid-1col">
-                        <div class="form-item align-top">
-                            <label class="form-label">多行文本框</label>
-                            <div class="form-control-wrap">
-                                <textarea class="form-textarea" id="field_multiline" placeholder="多行文本框">工作台面使用70%乙醇擦拭消毒，紫外照射30分钟，风机运行正常。</textarea>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-grid-3col">
-                        <div class="form-item">
-                            <label class="form-label">日期时间框</label>
-                            <div class="form-control-wrap">
-                                <input type="text" class="form-input" id="field_datetime_str" value="2025-08-13 10:38:00">
-                            </div>
-                        </div>
-                        <div class="form-item">
-                            <label class="form-label">单选框</label>
-                            <div class="form-control-wrap">
-                                <div class="radio-options-group">
-                                    <label class="radio-item-label"><input type="radio" name="r_opt1" value="单选框1" checked><span>单选框1</span></label>
+                    <!-- 两栏表单网格体系 -->
+                    <div class="pad-form-grid-2col">
+                        <!-- 左栏 -->
+                        <div class="pad-column-left">
+                            <!-- 操作时间 (必填红星号) -->
+                            <div class="pad-cell-row">
+                                <span class="pad-cell-label required">操作时间</span>
+                                <div class="pad-cell-control">
+                                    <input type="text" class="pad-flat-input" id="field_opt_time" value="${timeStr}">
+                                    <span class="pad-clear-circle" onclick="document.getElementById('field_opt_time').value=''" title="清空">×</span>
                                 </div>
-                                <a href="javascript:void(0)" class="clear-link-btn" onclick="clearRadioGroup('r_opt1')">清空</a>
                             </div>
-                        </div>
-                        <div class="form-item">
-                            <label class="form-label">单选框1</label>
-                            <div class="form-control-wrap">
-                                <div class="radio-options-group">
-                                    <label class="radio-item-label"><input type="radio" name="r_comm" value="当面沟通"><span>当面沟通</span></label>
-                                    <label class="radio-item-label"><input type="radio" name="r_comm" value="电话"><span>电话</span></label>
-                                    <label class="radio-item-label"><input type="radio" name="r_comm" value="微信"><span>微信</span></label>
-                                </div>
-                                <a href="javascript:void(0)" class="clear-link-btn" onclick="clearRadioGroup('r_comm')">清空</a>
-                            </div>
-                        </div>
-                    </div>
 
-                    <div class="form-grid-2col">
-                        <div class="form-item">
-                            <label class="form-label">多选框</label>
-                            <div class="form-control-wrap">
-                                <select class="form-select" id="field_multiselect1">
-                                    <option value="多选框1">多选框1</option>
-                                    <option value="多选框2">多选框2</option>
-                                    <option value="多选框3">多选框3</option>
-                                </select>
-                                <a href="javascript:void(0)" class="clear-link-btn" onclick="document.getElementById('field_multiselect1').selectedIndex = -1">清空</a>
-                            </div>
-                        </div>
-                        <div class="form-item">
-                            <label class="form-label">多选框3</label>
-                            <div class="form-control-wrap">
-                                <select class="form-select" id="field_multiselect3">
-                                    <option value="短信">短信</option>
-                                    <option value="系统弹窗">系统弹窗</option>
-                                    <option value="邮件通知">邮件通知</option>
-                                </select>
-                                <a href="javascript:void(0)" class="clear-link-btn" onclick="document.getElementById('field_multiselect3').selectedIndex = -1">清空</a>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-grid-3col">
-                        <div class="form-item">
-                            <label class="form-label">单选框4</label>
-                            <div class="form-control-wrap">
-                                <div class="radio-options-group">
-                                    <label class="radio-item-label"><input type="radio" name="r_switch" value="开机" checked><span>开机</span></label>
-                                    <label class="radio-item-label"><input type="radio" name="r_switch" value="关机"><span>关机</span></label>
+                            <!-- 操作人 (必填红星号) -->
+                            <div class="pad-cell-row">
+                                <span class="pad-cell-label required">操作人</span>
+                                <div class="pad-cell-control">
+                                    <input type="text" class="pad-flat-input" id="field_operator" value="李何02" readonly>
                                 </div>
-                                <a href="javascript:void(0)" class="clear-link-btn" onclick="clearRadioGroup('r_switch')">清空</a>
+                            </div>
+
+                            <!-- 文本框 -->
+                            <div class="pad-cell-row">
+                                <span class="pad-cell-label">文本框</span>
+                                <div class="pad-cell-control">
+                                    <input type="text" class="pad-flat-input" id="field_text1" value="文本框默认值">
+                                    <span class="pad-clear-circle" onclick="document.getElementById('field_text1').value=''" title="清空">×</span>
+                                </div>
+                            </div>
+
+                            <!-- 日期框 -->
+                            <div class="pad-cell-row">
+                                <span class="pad-cell-label">日期框</span>
+                                <div class="pad-cell-control">
+                                    <input type="text" class="pad-flat-input" id="field_date1" value="${dateStr}">
+                                    <span class="pad-clear-circle" onclick="document.getElementById('field_date1').value=''" title="清空">×</span>
+                                </div>
+                            </div>
+
+                            <!-- 数字框 -->
+                            <div class="pad-cell-row">
+                                <span class="pad-cell-label">数字框</span>
+                                <div class="pad-cell-control">
+                                    <input type="number" class="pad-flat-input" id="field_num1" value="8">
+                                </div>
+                            </div>
+
+                            <!-- 多行文本框 -->
+                            <div class="pad-cell-row align-top">
+                                <span class="pad-cell-label" style="line-height:1.3; padding-top:2px;">多行文本<br>框</span>
+                                <div class="pad-cell-control">
+                                    <textarea class="pad-flat-input" id="field_multiline" style="min-height:52px; resize:none;" placeholder="多行文本框">多行文本框</textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 右栏 -->
+                        <div class="pad-column-right">
+                            <!-- 下拉框 -->
+                            <div class="pad-cell-row">
+                                <span class="pad-cell-label">下拉框</span>
+                                <div class="pad-cell-control">
+                                    <select class="pad-flat-input" id="field_select1" style="cursor:pointer;">
+                                        <option value="下拉值1" selected>下拉值1</option>
+                                        <option value="下拉值2">下拉值2</option>
+                                        <option value="下拉值3">下拉值3</option>
+                                    </select>
+                                    <span class="pad-clear-circle" onclick="document.getElementById('field_select1').selectedIndex=0" title="清空">×</span>
+                                </div>
+                            </div>
+
+                            <!-- 日期时间框 -->
+                            <div class="pad-cell-row">
+                                <span class="pad-cell-label" style="line-height:1.3;">日期时间<br>框</span>
+                                <div class="pad-cell-control">
+                                    <input type="text" class="pad-flat-input" id="field_datetime_str" value="2025-08-13 10:38">
+                                    <span class="pad-clear-circle" onclick="document.getElementById('field_datetime_str').value=''" title="清空">×</span>
+                                </div>
+                            </div>
+
+                            <!-- 单选框 (圆形原生蓝底白勾，蓝色清空文字) -->
+                            <div class="pad-cell-row">
+                                <span class="pad-cell-label">单选框</span>
+                                <div class="pad-cell-control">
+                                    <div class="pad-radio-group">
+                                        <label class="pad-radio-item">
+                                            <input type="radio" name="r_opt1" value="单选框1" checked>
+                                            <span>单选框1</span>
+                                        </label>
+                                    </div>
+                                    <a href="javascript:void(0)" class="pad-clear-btn" onclick="clearRadioGroup('r_opt1')">清空</a>
+                                </div>
+                            </div>
+
+                            <!-- 单选框1 (多项单选) -->
+                            <div class="pad-cell-row">
+                                <span class="pad-cell-label">单选框1</span>
+                                <div class="pad-cell-control">
+                                    <div class="pad-radio-group">
+                                        <label class="pad-radio-item"><input type="radio" name="r_comm" value="当面沟通" checked><span>当面沟通</span></label>
+                                        <label class="pad-radio-item"><input type="radio" name="r_comm" value="电话"><span>电话</span></label>
+                                        <label class="pad-radio-item"><input type="radio" name="r_comm" value="微信"><span>微信</span></label>
+                                    </div>
+                                    <a href="javascript:void(0)" class="pad-clear-btn" onclick="clearRadioGroup('r_comm')">清空</a>
+                                </div>
+                            </div>
+
+                            <!-- 多选框 (带右箭头 >) -->
+                            <div class="pad-cell-row" onclick="showToast('已选择：多选框1', 'info')" style="cursor:pointer;">
+                                <span class="pad-cell-label">多选框</span>
+                                <div class="pad-cell-control">
+                                    <span style="font-size:14px; color:#1d2129;">多选框1</span>
+                                    <span class="pad-arrow-right">&gt;</span>
+                                </div>
+                            </div>
+
+                            <!-- 多选框3 (带右箭头 >) -->
+                            <div class="pad-cell-row" onclick="showToast('已选择：短信', 'info')" style="cursor:pointer;">
+                                <span class="pad-cell-label">多选框3</span>
+                                <div class="pad-cell-control">
+                                    <span style="font-size:14px; color:#1d2129;">短信</span>
+                                    <span class="pad-arrow-right">&gt;</span>
+                                </div>
                             </div>
                         </div>
                     </div>
