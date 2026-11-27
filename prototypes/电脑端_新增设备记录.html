@@ -361,17 +361,170 @@
             background: #ffffff;
         }
 
-        /* 记录模板横幅：标题是记录类型名称，后面跟频次 (1:1 截图1与截图2 | 运行 ⓘ 使用时需要) */
+        /* 记录模板横幅：标题、频次、模式切换入口【单条录入】/【一键批量】 */
         .record-template-banner {
-            height: 38px;
+            height: 44px;
             background: #e6f4ff;
             border-bottom: 1px solid #d4e8fa;
             display: flex;
             align-items: center;
+            justify-content: space-between;
             padding: 0 16px;
-            gap: 16px;
             font-size: 13.5px;
             flex-shrink: 0;
+        }
+
+        /* 模式切换分段触控胶囊 (单条录入 vs 一键批量) */
+        .mode-switch-segmented {
+            background: #d4e8fa;
+            border-radius: 6px;
+            padding: 2px;
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .mode-switch-btn {
+            border: none;
+            background: transparent;
+            color: #0077b6;
+            font-size: 13px;
+            font-weight: 500;
+            padding: 5px 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            white-space: nowrap;
+        }
+
+        .mode-switch-btn.active {
+            background: #ffffff;
+            color: var(--color-primary);
+            box-shadow: 0 1px 3px rgba(0, 159, 232, 0.2);
+            font-weight: 600;
+        }
+
+        /* 一键批量填报值展示看板 */
+        .batch-summary-header {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 13.5px;
+            color: var(--text-title);
+        }
+
+        .batch-summary-badge {
+            background: #e6f4ff;
+            color: var(--color-primary);
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .batch-cards-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .batch-dev-value-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 12px 16px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            transition: all 0.15s;
+        }
+
+        .batch-dev-value-card:hover {
+            border-color: #cbd5e1;
+        }
+
+        .batch-card-top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 8px;
+        }
+
+        .batch-card-name {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-title);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .batch-card-tag {
+            font-size: 12px;
+            background: #f1f5f9;
+            color: #475569;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-weight: 400;
+        }
+
+        .batch-card-status-badge {
+            font-size: 12px;
+            color: #00b42a;
+            background: #e8ffea;
+            border: 1px solid #b7eb8f;
+            padding: 2px 8px;
+            border-radius: 3px;
+        }
+
+        .batch-card-values-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px 16px;
+            background: #fafbfc;
+            border-radius: 4px;
+            padding: 10px 14px;
+        }
+
+        .batch-val-item {
+            display: flex;
+            align-items: center;
+            font-size: 13.5px;
+            gap: 6px;
+        }
+
+        .batch-val-label {
+            color: #64748b;
+            min-width: 68px;
+        }
+
+        .batch-val-content {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .batch-inline-input {
+            height: 28px;
+            width: 70px;
+            border: 1px solid var(--line-default);
+            border-radius: 4px;
+            padding: 0 6px;
+            font-size: 13px;
+            color: var(--color-primary);
+            font-weight: 600;
+            background: #ffffff;
+            outline: none;
+            text-align: center;
+        }
+
+        .batch-inline-input:focus {
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 2px rgba(0, 159, 232, 0.2);
         }
 
         .tpl-banner-title {
@@ -1070,15 +1223,23 @@
             <!-- ================= 右侧录入区域 (无顶部设备资料大卡片，直接是记录模板横幅 + 表单) ================= -->
             <div class="pc-right-content">
 
-                <!-- 记录模板横幅：标题是记录类型名称，后面跟频次 (1:1 截图1与截图2) -->
+                <!-- 记录模板横幅：标题、频次、模式切换入口【单条录入】/【一键批量】 -->
                 <div class="record-template-banner">
-                    <div class="tpl-banner-title" id="tplBannerTitle">运行</div>
-                    <div class="tpl-banner-frequency" id="tplBannerFreq">
-                        <svg class="tpl-freq-icon" viewBox="0 0 16 16" width="14" height="14" fill="none">
-                            <circle cx="8" cy="8" r="8" fill="#009fe8"/>
-                            <path d="M8 3.5V8.5M8 11V12" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round"/>
-                        </svg>
-                        <span id="tplFreqText">使用时需要</span>
+                    <div style="display: flex; align-items: center; gap: 16px;">
+                        <div class="tpl-banner-title" id="tplBannerTitle">运行</div>
+                        <div class="tpl-banner-frequency" id="tplBannerFreq">
+                            <svg class="tpl-freq-icon" viewBox="0 0 16 16" width="14" height="14" fill="none">
+                                <circle cx="8" cy="8" r="8" fill="#009fe8"/>
+                                <path d="M8 3.5V8.5M8 11V12" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round"/>
+                            </svg>
+                            <span id="tplFreqText">使用时需要</span>
+                        </div>
+                    </div>
+
+                    <!-- 模式切换入口：【单条录入】 / 【一键批量】 -->
+                    <div class="mode-switch-segmented" id="modeSwitchSegmented">
+                        <button type="button" class="mode-switch-btn active" id="btnModeSingle" onclick="switchEntryMode('single')">单条录入</button>
+                        <button type="button" class="mode-switch-btn" id="btnModeBatch" onclick="switchEntryMode('batch')">一键批量</button>
                     </div>
                 </div>
 
@@ -1376,50 +1537,32 @@
         }
 
         // ================= 设备卡片点击选择与批量自动判断 =================
+        // ================= 设备卡片点击选择 (模式感知：单条录入模式下直接切换目标设备；一键批量模式下支持多选勾选) =================
         function handleToggleDevice(deviceId) {
             const targetDev = mockDeviceDatabase.find(d => d.id === deviceId);
             if (!targetDev) return;
 
-            const isAlreadySelected = selectedDeviceIds.includes(deviceId);
-
-            if (isAlreadySelected) {
-                // 允许反选取消当前设备，不再死锁！反选后可以清空至 0 台
-                selectedDeviceIds = selectedDeviceIds.filter(id => id !== deviceId);
-                if (selectedDeviceIds.length === 0) {
+            if (currentEntryMode === "single") {
+                // 【单条录入】模式：点击任意设备卡片，直接平滑切换为当前唯一选中的目标设备
+                if (selectedDeviceIds.length === 1 && selectedDeviceIds[0] === deviceId) {
+                    // 再次点击同一张卡片，反选清空为 0 台
+                    selectedDeviceIds = [];
                     lockedTemplateType = null;
-                }
-            } else {
-                if (selectedDeviceIds.length === 0) {
-                    // 当前未选择任何设备，直接选中目标设备
+                } else {
                     selectedDeviceIds = [deviceId];
                     lockedTemplateType = targetDev.templateType;
+                }
+            } else {
+                // 【一键批量】模式：支持多选勾选与反选
+                const isAlreadySelected = selectedDeviceIds.includes(deviceId);
+                if (isAlreadySelected) {
+                    selectedDeviceIds = selectedDeviceIds.filter(id => id !== deviceId);
+                    if (selectedDeviceIds.length === 0) {
+                        lockedTemplateType = null;
+                    }
                 } else {
-                    const firstDev = mockDeviceDatabase.find(d => selectedDeviceIds.includes(d.id)) || mockDeviceDatabase[0];
-
-                    // 阶段 1：校验当前模板或目标设备是否支持批量录入 (allowBatch)
-                    if (!firstDev.allowBatch || !targetDev.allowBatch) {
-                        const cardEl = document.getElementById(`card-${deviceId}`);
-                        if (cardEl) {
-                            cardEl.classList.add("shake-animation");
-                            setTimeout(() => cardEl.classList.remove("shake-animation"), 400);
-                        }
-                        showToast("当前记录类型仅支持单台设备录入，不支持批量填入", "warning");
-                        return;
-                    }
-
-                    // 阶段 2：校验设备记录模板是否一致 (不同模板严禁合并多选，必须 Toast 警示拦截)
-                    if (targetDev.templateType !== lockedTemplateType) {
-                        const cardEl = document.getElementById(`card-${deviceId}`);
-                        if (cardEl) {
-                            cardEl.classList.add("shake-animation");
-                            setTimeout(() => cardEl.classList.remove("shake-animation"), 400);
-                        }
-                        showToast(`【${firstDev.name}】与【${targetDev.name}】记录模板不同，请选择相同记录模板的设备`, "warning");
-                        return;
-                    }
-
-                    // 校验通过：同类型同模板设备，支持批量追加多选
                     selectedDeviceIds.push(deviceId);
+                    if (!lockedTemplateType) lockedTemplateType = targetDev.templateType;
                 }
             }
 
@@ -1521,11 +1664,39 @@
             tplFreqText.textContent = firstDev.frequency || "使用时需要";
         }
 
-        // ================= 渲染右侧动态表单 (未选设备时仅展示文字，底部无按钮；勾选后唤出全部) =================
+        // 当前录入模式：'single' (单条录入) | 'batch' (一键批量)
+        let currentEntryMode = "single";
+
+        function switchEntryMode(mode) {
+            currentEntryMode = mode;
+            const btnSingle = document.getElementById("btnModeSingle");
+            const btnBatch = document.getElementById("btnModeBatch");
+            if (btnSingle && btnBatch) {
+                if (mode === "single") {
+                    btnSingle.classList.add("active");
+                    btnBatch.classList.remove("active");
+                } else {
+                    btnBatch.classList.add("active");
+                    btnSingle.classList.remove("active");
+                }
+            }
+            renderDeviceCards();
+            updateSubtotalInfo();
+            updateBannerInfo();
+            renderDynamicForm();
+            if (mode === "batch") {
+                showToast("已切换至【一键批量】模式：直观展示所有设备批量填报值", "success");
+            } else {
+                showToast("已切换至【单条录入】模式：可针对当前设备精细填报表单", "success");
+            }
+        }
+
+        // ================= 渲染右侧动态表单 (支持【单条录入】精细表单与【一键批量】所有设备数值大盘) =================
         function renderDynamicForm() {
             const container = document.getElementById("dynamicFormContainer");
             const attachWrap = document.getElementById("attachmentSectionWrap");
             const footerBar = document.getElementById("pcModalFooter");
+            const confirmBtn = document.getElementById("btnConfirmSubmit");
             if (!container) return;
 
             // 1. 如果已选设备为 0（未选中设备）：仅展示文字“请选择需要填报记录的设备”，收起附件区与底部按钮栏
@@ -1541,13 +1712,57 @@
                 return;
             }
 
-            // 2. 有选中设备时：恢复附件资料区与底部按钮栏
-            if (attachWrap) attachWrap.style.display = "block";
+            // 2. 有选中设备时：恢复底部按钮栏
             if (footerBar) footerBar.style.display = "flex";
 
             const now = new Date();
             const timeStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
             const dateStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+
+            // ================= 模式二：【一键批量】模式 (展示当前所有设备批量填写的具体默认值) =================
+            if (currentEntryMode === "batch") {
+                if (attachWrap) attachWrap.style.display = "none";
+                if (confirmBtn) confirmBtn.textContent = `⚡ 一键批量保存记录 (共 ${selectedDeviceIds.length} 台)`;
+
+                const selectedDevs = mockDeviceDatabase.filter(d => selectedDeviceIds.includes(d.id));
+
+                container.innerHTML = `
+                    <!-- 批量看板顶部核对提示条 -->
+                    <div class="batch-summary-header">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <span class="batch-summary-badge">⚡ 一键批量新增模式</span>
+                            <span>已选 <strong>${selectedDevs.length}</strong> 台设备待一键录入</span>
+                        </div>
+                        <div style="font-size:13px; color:#64748b;">
+                            统一记录时间: <strong style="color:#1d2129;">${timeStr}</strong> | 记录人: <strong style="color:#1d2129;">李珂02</strong>
+                        </div>
+                    </div>
+
+                    <!-- 所有设备批量写入的值卡片清单 (一目了然展示每台设备的默认/实测字段) -->
+                    <div class="batch-cards-list">
+                        ${selectedDevs.map((dev, idx) => `
+                            <div class="batch-dev-value-card">
+                                <div class="batch-card-top-bar">
+                                    <div class="batch-card-name">
+                                        <span>${idx + 1}. ${dev.name}</span>
+                                        <span class="batch-card-tag">${dev.devType}</span>
+                                        <span style="font-size:12px; color:#64748b; font-weight:400;">编号: ${dev.devCode}</span>
+                                    </div>
+                                    <span class="batch-card-status-badge">✓ 必填项已加载合规默认值</span>
+                                </div>
+                                <div class="batch-card-values-grid">
+                                    ${renderBatchDeviceValues(dev)}
+                                </div>
+                            </div>
+                        `).join("")}
+                    </div>
+                `;
+                return;
+            }
+
+            // ================= 模式一：【单条录入】模式 (恢复详细表单与附件) =================
+            if (attachWrap) attachWrap.style.display = "block";
+            if (confirmBtn) confirmBtn.textContent = "确定";
 
             // 当前选中的设备模板
             const firstDev = mockDeviceDatabase.find(d => selectedDeviceIds.includes(d.id)) || mockDeviceDatabase[0];
@@ -1982,13 +2197,141 @@
             }
         }
 
+        // 渲染单台设备在【一键批量】模式下的具体默认值展示字段 (支持关键数值行内编辑微调)
+        function renderBatchDeviceValues(dev) {
+            const tpl = dev.templateType;
+            if (tpl === "tpl_fridge") {
+                return `
+                    <div class="batch-val-item">
+                        <span class="batch-val-label">箱内温度:</span>
+                        <span class="batch-val-content">
+                            <input type="number" class="batch-inline-input" value="4.0" step="0.1" title="支持现场修改实测温度"> ℃
+                        </span>
+                    </div>
+                    <div class="batch-val-item">
+                        <span class="batch-val-label">设定目标:</span>
+                        <span class="batch-val-content">4.0 ℃</span>
+                    </div>
+                    <div class="batch-val-item">
+                        <span class="batch-val-label">温控显示:</span>
+                        <span class="batch-val-content" style="color:#00b42a;">正常</span>
+                    </div>
+                    <div class="batch-val-item">
+                        <span class="batch-val-label">冷凝结霜:</span>
+                        <span class="batch-val-content">正常无结冰</span>
+                    </div>
+                    <div class="batch-val-item">
+                        <span class="batch-val-label">门封密封:</span>
+                        <span class="batch-val-content">良好紧实</span>
+                    </div>
+                    <div class="batch-val-item">
+                        <span class="batch-val-label">超温报警:</span>
+                        <span class="batch-val-content" style="color:#00b42a;">正常受控</span>
+                    </div>
+                `;
+            } else if (tpl === "tpl_pathology") {
+                return `
+                    <div class="batch-val-item">
+                        <span class="batch-val-label">运行状态:</span>
+                        <span class="batch-val-content" style="color:#00b42a;">运转正常</span>
+                    </div>
+                    <div class="batch-val-item">
+                        <span class="batch-val-label">石蜡缸温度:</span>
+                        <span class="batch-val-content">
+                            <input type="number" class="batch-inline-input" value="62.0" step="0.5" title="点击微调石蜡温度"> ℃
+                        </span>
+                    </div>
+                    <div class="batch-val-item">
+                        <span class="batch-val-label">试剂液位:</span>
+                        <span class="batch-val-content">达标充足</span>
+                    </div>
+                    <div class="batch-val-item">
+                        <span class="batch-val-label">抽气排废:</span>
+                        <span class="batch-val-content">滤芯良好</span>
+                    </div>
+                    <div class="batch-val-item">
+                        <span class="batch-val-label">组织盒架:</span>
+                        <span class="batch-val-content">归位到位</span>
+                    </div>
+                    <div class="batch-val-item">
+                        <span class="batch-val-label">故障自检:</span>
+                        <span class="batch-val-content" style="color:#00b42a;">无报警</span>
+                    </div>
+                `;
+            } else if (tpl === "tpl_uv") {
+                return `
+                    <div class="batch-val-item">
+                        <span class="batch-val-label">照射时长:</span>
+                        <span class="batch-val-content">
+                            <input type="number" class="batch-inline-input" value="60" step="10" title="点击微调照射时长"> min
+                        </span>
+                    </div>
+                    <div class="batch-val-item">
+                        <span class="batch-val-label">人员清场:</span>
+                        <span class="batch-val-content" style="color:#00b42a;">已确认清场</span>
+                    </div>
+                    <div class="batch-val-item">
+                        <span class="batch-val-label">警示标识:</span>
+                        <span class="batch-val-content">已悬挂警示牌</span>
+                    </div>
+                    <div class="batch-val-item">
+                        <span class="batch-val-label">灯管状态:</span>
+                        <span class="batch-val-content">发光稳定合格</span>
+                    </div>
+                    <div class="batch-val-item">
+                        <span class="batch-val-label">定时控制:</span>
+                        <span class="batch-val-content">自动倒计时</span>
+                    </div>
+                    <div class="batch-val-item">
+                        <span class="batch-val-label">照射后通风:</span>
+                        <span class="batch-val-content">30min通风</span>
+                    </div>
+                `;
+            } else {
+                // 超净工作台 / 默认
+                return `
+                    <div class="batch-val-item">
+                        <span class="batch-val-label">紫外照射:</span>
+                        <span class="batch-val-content">
+                            <input type="number" class="batch-inline-input" value="30" step="5" title="点击微调紫外照射时长"> min
+                        </span>
+                    </div>
+                    <div class="batch-val-item">
+                        <span class="batch-val-label">风机自检:</span>
+                        <span class="batch-val-content" style="color:#00b42a;">正常开启</span>
+                    </div>
+                    <div class="batch-val-item">
+                        <span class="batch-val-label">乙醇擦拭:</span>
+                        <span class="batch-val-content">已完成消毒</span>
+                    </div>
+                    <div class="batch-val-item">
+                        <span class="batch-val-label">前窗复位:</span>
+                        <span class="batch-val-content">高度已复位</span>
+                    </div>
+                    <div class="batch-val-item">
+                        <span class="batch-val-label">台面状态:</span>
+                        <span class="batch-val-content">洁净无杂物</span>
+                    </div>
+                    <div class="batch-val-item">
+                        <span class="batch-val-label">运行开关:</span>
+                        <span class="batch-val-content" style="color:#00b42a;">开机</span>
+                    </div>
+                `;
+            }
+        }
+
         function handleSubmitForm() {
             const count = selectedDeviceIds.length;
             if (count === 0) {
                 showToast("请选择需要填报记录的设备", "warning");
                 return;
             }
-            showToast(`✓ 保存成功！已为所选的 ${count} 台设备写入历史台账。`, "success");
+            if (currentEntryMode === "batch") {
+                showToast(`✓ 一键批量保存成功！已为所选的 ${count} 台设备写入合规台账流水。`, "success");
+            } else {
+                const dev = mockDeviceDatabase.find(d => selectedDeviceIds.includes(d.id));
+                showToast(`✓ 保存成功！已为【${dev ? dev.name : '设备'}】写入单条详细台账记录。`, "success");
+            }
         }
 
         function handleCloseModal() {
