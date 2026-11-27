@@ -756,24 +756,23 @@
             font-weight: 500;
         }
 
-        /* 清空文字触控按钮 (带底色圆角，手指轻触即中) */
+        /* 清空文字按钮：蓝色文字带下划线 */
         .clear-link-btn {
             color: var(--color-primary);
             font-size: 13px;
             cursor: pointer;
-            text-decoration: none;
+            text-decoration: underline;
             margin-left: 8px;
-            padding: 6px 12px;
-            background: #f1f5f9;
-            border: 1px solid #e2e8f0;
-            border-radius: 4px;
+            padding: 2px 4px;
+            background: transparent;
+            border: none;
             white-space: nowrap;
             user-select: none;
-            transition: all 0.15s;
+            transition: opacity 0.15s;
         }
 
         .clear-link-btn:hover {
-            background: #e2e8f0;
+            opacity: 0.8;
             color: var(--color-primary-hover);
         }
 
@@ -2163,7 +2162,7 @@
             }
         }
 
-        // 渲染单台设备在【一键批量】模式下的组件及默认值 (纯只读两栏展示，无编辑框，无彩色/标签样式，为空显示“为空”)
+        // 渲染单台设备在【一键批量】模式下的组件及默认值 (纯只读两栏展示，无编辑框，无彩色/标签样式，为空的字段直接置空)
         function renderBatchDeviceValues(dev) {
             const tpl = dev.templateType;
             if (tpl === "tpl_fridge") {
@@ -2194,7 +2193,7 @@
                     </div>
                     <div class="batch-val-item">
                         <span class="batch-val-label">巡检备注:</span>
-                        <span class="batch-val-content">为空</span>
+                        <span class="batch-val-content"></span>
                     </div>
                 `;
             } else if (tpl === "tpl_pathology") {
@@ -2225,7 +2224,7 @@
                     </div>
                     <div class="batch-val-item">
                         <span class="batch-val-label">巡检备注:</span>
-                        <span class="batch-val-content">为空</span>
+                        <span class="batch-val-content"></span>
                     </div>
                 `;
             } else if (tpl === "tpl_uv") {
@@ -2256,7 +2255,7 @@
                     </div>
                     <div class="batch-val-item">
                         <span class="batch-val-label">巡检备注:</span>
-                        <span class="batch-val-content">为空</span>
+                        <span class="batch-val-content"></span>
                     </div>
                 `;
             } else {
@@ -2288,7 +2287,7 @@
                     </div>
                     <div class="batch-val-item">
                         <span class="batch-val-label">巡检备注:</span>
-                        <span class="batch-val-content">为空</span>
+                        <span class="batch-val-content"></span>
                     </div>
                 `;
             }
