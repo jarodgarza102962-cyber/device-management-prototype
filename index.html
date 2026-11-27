@@ -1422,8 +1422,8 @@
 
                     <!-- 模式切换入口：【单条录入】 / 【一键批量】 -->
                     <div class="mode-switch-segmented" id="modeSwitchSegmented">
-                        <button type="button" class="mode-switch-btn active" id="btnModeSingle" onclick="switchEntryMode('single')">单条录入</button>
-                        <button type="button" class="mode-switch-btn" id="btnModeBatch" onclick="switchEntryMode('batch')">一键批量</button>
+                        <button type="button" class="mode-switch-btn" id="btnModeSingle" onclick="switchEntryMode('single')">单条录入</button>
+                        <button type="button" class="mode-switch-btn active" id="btnModeBatch" onclick="switchEntryMode('batch')">一键批量</button>
                     </div>
                 </div>
 
@@ -1573,7 +1573,8 @@
 
         // 当前状态
         let currentRecordType = "use_uv";
-        let selectedDeviceIds = ["DEV_PCR_301"]; // 默认选中首台超净工作台
+        let currentEntryMode = "batch"; // 默认选中【一键批量】模式
+        let selectedDeviceIds = ["DEV_PCR_301", "DEV_CJ_001"]; // 默认选中符合批量录入的同模板超净工作台设备
         let lockedTemplateType = "tpl_cleanbench"; // 锁定超净工作台运行记录模板
         let currentFilterType = "ALL";
         let searchKeyword = "";
@@ -1608,7 +1609,16 @@
 
         window.addEventListener("DOMContentLoaded", () => {
             const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get("mode") === "batch") {
+            if (urlParams.get("mode") === "single") {
+                currentEntryMode = "single";
+                selectedDeviceIds = ["DEV_PCR_301"];
+                const btnSingle = document.getElementById("btnModeSingle");
+                const btnBatch = document.getElementById("btnModeBatch");
+                if (btnSingle && btnBatch) {
+                    btnSingle.classList.add("active");
+                    btnBatch.classList.remove("active");
+                }
+            } else {
                 currentEntryMode = "batch";
                 selectedDeviceIds = ["DEV_PCR_301", "DEV_CJ_001"];
                 const btnSingle = document.getElementById("btnModeSingle");
@@ -1845,9 +1855,6 @@
             const firstDev = mockDeviceDatabase.find(d => selectedDeviceIds.includes(d.id)) || mockDeviceDatabase[0];
             tplFreqText.textContent = firstDev.frequency || "使用时需要";
         }
-
-        // 当前录入模式：'single' (单条录入) | 'batch' (一键批量)
-        let currentEntryMode = "single";
 
         function switchEntryMode(mode) {
             currentEntryMode = mode;
@@ -2147,18 +2154,6 @@
             } else {
                 // 默认 / PCR超净工作台 (两栏 Cell 布局，1:1 真机截图组件样式)
                 container.innerHTML = `
-                    <!-- 顶部文字标签说明条 (真机截图 1:1) -->
-                    <div class="pad-banner-tag-box">
-                        <div style="display:flex; align-items:center;">
-                            <span style="color:#4e5969; font-size:14px; width:95px; flex-shrink:0;">文字标签</span>
-                            <span style="color:#1d2129; font-size:14px;">文字标签内容1234567890</span>
-                        </div>
-                        <div class="pad-tag-actions">
-                            <button type="button" class="pad-btn-copy" onclick="showToast('已复制文字标签内容', 'success')">复制</button>
-                            <button type="button" class="pad-btn-paste" onclick="showToast('已粘贴内容', 'success')">粘贴</button>
-                        </div>
-                    </div>
-
                     <!-- 两栏表单网格体系 -->
                     <div class="pad-form-grid-2col">
                         <!-- 左栏 -->
