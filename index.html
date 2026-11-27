@@ -1851,6 +1851,13 @@
 
         function switchEntryMode(mode) {
             currentEntryMode = mode;
+            if (mode === "single" && selectedDeviceIds.length > 1) {
+                selectedDeviceIds = [selectedDeviceIds[0]];
+                const firstDev = mockDeviceDatabase.find(d => d.id === selectedDeviceIds[0]);
+                if (firstDev) {
+                    lockedTemplateType = firstDev.templateType;
+                }
+            }
             const btnSingle = document.getElementById("btnModeSingle");
             const btnBatch = document.getElementById("btnModeBatch");
             if (btnSingle && btnBatch) {
