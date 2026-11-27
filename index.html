@@ -3,8 +3,8 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>新增记录 - 电脑端外部调用</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>新增记录 - 触控平板工作台 (1280×800)</title>
     <style>
         :root {
             /* 严格对照系统真机截图与 CNAS 规范 */
@@ -52,69 +52,35 @@
 
         body {
             font-family: var(--font-family);
-            background-color: var(--fill-page);
+            background-color: #1e293b;
             color: var(--text-primary);
             height: 100vh;
+            width: 100vw;
             display: flex;
-            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             overflow: hidden;
             user-select: none;
             font-size: 14px;
         }
 
-        /* 顶部模拟外部系统调用工具条 (演示切换场景) */
-        .ext-sim-bar {
-            height: 32px;
-            background: #2b3a4a;
-            color: var(--text-inverse);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 16px;
-            font-size: 12px;
-            flex-shrink: 0;
-            z-index: 50;
-        }
-
-        .ext-sim-left {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .ext-sim-badge {
-            background: rgba(255, 255, 255, 0.16);
-            padding: 2px 8px;
-            border-radius: 4px;
-            color: #00b42a;
-            font-family: monospace;
-            font-size: 12px;
-        }
-
-        .ext-sim-select {
-            background: #3d4e61;
-            border: 1px solid #4f637a;
-            color: #ffffff;
-            font-size: 12px;
-            padding: 2px 8px;
-            border-radius: 3px;
-            outline: none;
-            cursor: pointer;
-        }
-
-        /* 电脑端主录入界面容器 (1:1 还原弹窗) */
+        /* ================= 触摸板 1280×800 标准高保真工作台容器 ================= */
         .pc-modal-container {
-            flex: 1;
+            width: 1280px;
+            height: 800px;
+            max-width: 100vw;
+            max-height: 100vh;
             display: flex;
             flex-direction: column;
             background: #ffffff;
+            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
             overflow: hidden;
             position: relative;
         }
 
-        /* ================= 1. 顶部标题栏 (1:1 截图：纯白背景、无返回、居中标题、右侧深蓝关闭按钮) ================= */
+        /* ================= 1. 顶部标题栏 (触摸板 48px 高度、右侧深蓝触控关闭按钮) ================= */
         .pc-modal-header {
-            height: 42px;
+            height: 48px;
             background: #ffffff;
             border-bottom: 1px solid var(--line-default);
             display: flex;
@@ -125,19 +91,19 @@
         }
 
         .pc-modal-title {
-            font-size: 16px;
+            font-size: 17px;
             font-weight: 600;
             color: var(--text-title);
             letter-spacing: 0.5px;
         }
 
-        /* 截图中的右侧深蓝关闭方块 */
+        /* 触控大热区关闭按钮 */
         .pc-modal-close-btn {
             position: absolute;
             top: 0;
             right: 0;
-            width: 44px;
-            height: 42px;
+            width: 48px;
+            height: 48px;
             background: var(--color-primary);
             color: #ffffff;
             border: none;
@@ -145,7 +111,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 20px;
+            font-size: 22px;
             font-weight: 300;
             line-height: 1;
             transition: background-color 0.15s;
@@ -163,10 +129,10 @@
             position: relative;
         }
 
-        /* ================= 2.1 左侧设备区域 (宽 280px，支持类型下拉、模糊查询、完整卡片) ================= */
+        /* ================= 2.1 左侧设备区域 (触摸板适配宽 320px，支持类型下拉、模糊查询、大触控卡片) ================= */
         .pc-left-sidebar {
-            width: 280px;
-            min-width: 260px;
+            width: 320px;
+            min-width: 300px;
             border-right: 1px solid var(--line-table);
             background: #fbfbfd;
             display: flex;
@@ -175,31 +141,32 @@
             flex-shrink: 0;
         }
 
-        /* 左侧筛选区：只读工作台 + 设备类型下拉单选 + 模糊查询输入框 */
+        /* 左侧筛选区：触控大按钮与大输入框 */
         .left-filter-area {
-            padding: 10px 12px;
+            padding: 12px;
             background: #ffffff;
             border-bottom: 1px solid var(--line-table);
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 10px;
             flex-shrink: 0;
         }
 
         .left-select-input {
             width: 100%;
-            height: 28px;
+            height: 38px;
             border: 1px solid var(--line-default);
             border-radius: 4px;
-            padding: 0 22px 0 8px;
-            font-size: 12px;
+            padding: 0 30px 0 12px;
+            font-size: 14px;
             color: var(--text-primary);
             outline: none;
-            background: #ffffff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%23909399' d='M0 0l5 5 5-5z'/%3E%3C/svg%3E") no-repeat calc(100% - 8px) center;
+            background: #ffffff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23909399' d='M0 0l6 6 6-6z'/%3E%3C/svg%3E") no-repeat calc(100% - 12px) center;
             appearance: none;
             -webkit-appearance: none;
             cursor: pointer;
             box-sizing: border-box;
+            transition: border-color 0.15s;
         }
 
         .left-select-input:focus {
@@ -208,11 +175,11 @@
 
         .left-search-input {
             width: 100%;
-            height: 28px;
+            height: 38px;
             border: 1px solid var(--line-default);
             border-radius: 4px;
-            padding: 0 8px;
-            font-size: 12.5px;
+            padding: 0 12px;
+            font-size: 14px;
             color: var(--text-primary);
             outline: none;
             background: #ffffff;
@@ -223,16 +190,16 @@
             border-color: var(--color-primary);
         }
 
-        /* 全选与数值小计工具条 */
+        /* 全选与数值小计工具条 (高度 38px 方便手指点击) */
         .left-subtotal-toolbar {
-            height: 32px;
+            height: 38px;
             background: #f4f6fa;
             border-bottom: 1px solid var(--line-table);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 12px;
-            font-size: 12px;
+            padding: 0 14px;
+            font-size: 13px;
             color: var(--text-regular);
             flex-shrink: 0;
         }
@@ -240,14 +207,19 @@
         .select-all-label {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
             cursor: pointer;
-            font-size: 12px;
+            font-size: 13.5px;
             color: var(--text-primary);
             user-select: none;
         }
 
         .select-all-label input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--color-primary);
+        }
             accent-color: var(--color-primary);
             width: 14px;
             height: 14px;
@@ -290,24 +262,29 @@
             gap: 8px;
         }
 
-        /* 设备卡片 (完整展示6大字段) */
+        /* 设备卡片 (触摸板大触控热区：内边距舒展，15px大字体，防误触) */
         .pc-dev-card {
             background: #ffffff;
             border: 1px solid var(--line-default);
-            border-radius: 4px;
-            padding: 9px 12px;
+            border-radius: 6px;
+            padding: 12px 14px;
             cursor: pointer;
             position: relative;
             transition: all 0.15s ease;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            gap: 2px;
         }
 
         .pc-dev-card:hover {
             border-color: var(--line-heavy);
             background: #fafbfd;
+        }
+
+        .pc-dev-card:active {
+            transform: scale(0.99);
         }
 
         /* 选中态：淡蓝底高亮 + 蓝边框 + 右上角折角对勾 */
@@ -320,15 +297,15 @@
             position: absolute;
             top: 0;
             right: 0;
-            width: 22px;
-            height: 22px;
+            width: 26px;
+            height: 26px;
             background: var(--color-primary);
             clip-path: polygon(100% 0, 0 0, 100% 100%);
             display: none;
             align-items: flex-start;
             justify-content: flex-end;
-            padding-top: 2px;
-            padding-right: 2px;
+            padding-top: 3px;
+            padding-right: 3px;
             box-sizing: border-box;
             z-index: 5;
         }
@@ -338,7 +315,7 @@
         }
 
         .dev-card-name {
-            font-size: 14px;
+            font-size: 15px;
             font-weight: 700;
             color: var(--text-title);
             line-height: 1.4;
@@ -350,9 +327,9 @@
         }
 
         .dev-card-field-row {
-            font-size: 12px;
+            font-size: 13px;
             color: var(--text-regular);
-            line-height: 1.55;
+            line-height: 1.6;
             display: flex;
             align-items: baseline;
         }
@@ -503,14 +480,14 @@
         }
 
         .form-label {
-            width: 80px;
-            min-width: 80px;
+            width: 96px;
+            min-width: 96px;
             text-align: right;
-            padding-right: 4px;
+            padding-right: 6px;
             color: var(--text-primary);
-            font-size: 13.5px;
+            font-size: 14px;
             font-weight: 400;
-            line-height: 28px;
+            line-height: 38px;
             white-space: nowrap;
         }
 
@@ -518,24 +495,24 @@
             content: "*";
             color: var(--status-error-text);
             font-weight: bold;
-            margin-right: 2px;
+            margin-right: 3px;
         }
 
         .form-control-wrap {
             flex: 1;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             position: relative;
         }
 
         .form-input {
             width: 100%;
-            height: 28px;
+            height: 38px;
             border: 1px solid var(--line-default);
             border-radius: 4px;
-            padding: 0 10px;
-            font-size: 13px;
+            padding: 0 12px;
+            font-size: 14px;
             color: var(--text-primary);
             outline: none;
             background: #ffffff;
@@ -555,17 +532,18 @@
 
         .form-select {
             width: 100%;
-            height: 28px;
+            height: 38px;
             border: 1px solid var(--line-default);
             border-radius: 4px;
-            padding: 0 24px 0 10px;
-            font-size: 13px;
+            padding: 0 30px 0 12px;
+            font-size: 14px;
             color: var(--text-primary);
             outline: none;
-            background: #ffffff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%23909399' d='M0 0l5 5 5-5z'/%3E%3C/svg%3E") no-repeat calc(100% - 8px) center;
+            background: #ffffff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23909399' d='M0 0l6 6 6-6z'/%3E%3C/svg%3E") no-repeat calc(100% - 12px) center;
             appearance: none;
             -webkit-appearance: none;
             cursor: pointer;
+            transition: border-color 0.15s;
         }
 
         .form-select:focus {
@@ -574,15 +552,15 @@
 
         .form-textarea {
             width: 100%;
-            min-height: 56px;
+            min-height: 72px;
             border: 1px solid var(--line-default);
             border-radius: 4px;
-            padding: 6px 10px;
-            font-size: 13px;
+            padding: 8px 12px;
+            font-size: 14px;
             color: var(--text-primary);
             outline: none;
             font-family: inherit;
-            line-height: 1.5;
+            line-height: 1.6;
             resize: vertical;
         }
 
@@ -590,31 +568,39 @@
             border-color: var(--color-primary);
         }
 
-        /* 单选组与多选组排布 (1:1 截图2：选中文本与图标变主蓝，支持一键清空) */
+        /* 单选组与多选组排布 (触摸板胶囊微卡片触控区，手指点按极其轻松) */
         .radio-options-group {
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 12px;
             flex-wrap: wrap;
         }
 
         .radio-item-label {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
             cursor: pointer;
-            font-size: 13.5px;
+            font-size: 14px;
             color: #333333;
             user-select: none;
-            transition: color 0.15s;
+            padding: 6px 14px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            transition: all 0.15s ease;
+        }
+
+        .radio-item-label:active {
+            transform: scale(0.98);
         }
 
         .radio-item-label input[type="radio"] {
             appearance: none;
             -webkit-appearance: none;
-            width: 14px;
-            height: 14px;
-            border: 1px solid var(--line-heavy);
+            width: 18px;
+            height: 18px;
+            border: 1.5px solid var(--line-heavy);
             border-radius: 50%;
             outline: none;
             margin: 0;
@@ -633,32 +619,42 @@
 
         .radio-item-label input[type="radio"]:checked::after {
             content: "";
-            width: 6px;
-            height: 6px;
+            width: 8px;
+            height: 8px;
             background: var(--color-primary);
             border-radius: 50%;
         }
 
-        /* 选中项文本 1:1 匹配截图高亮为主蓝色 */
-        .radio-item-label input[type="radio"]:checked + span,
-        .radio-item-label:has(input[type="radio"]:checked) span {
-            color: var(--color-primary) !important;
+        /* 选中项胶囊卡片变主蓝色背景微浅 */
+        .radio-item-label:has(input[type="radio"]:checked) {
+            background: #e6f4ff;
+            border-color: var(--color-primary);
         }
 
-        /* 清空文字按钮 */
+        .radio-item-label:has(input[type="radio"]:checked) span {
+            color: var(--color-primary) !important;
+            font-weight: 500;
+        }
+
+        /* 清空文字触控按钮 (带底色圆角，手指轻触即中) */
         .clear-link-btn {
             color: var(--color-primary);
             font-size: 13px;
             cursor: pointer;
             text-decoration: none;
-            margin-left: 10px;
+            margin-left: 8px;
+            padding: 6px 12px;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
             white-space: nowrap;
             user-select: none;
+            transition: all 0.15s;
         }
 
         .clear-link-btn:hover {
+            background: #e2e8f0;
             color: var(--color-primary-hover);
-            text-decoration: underline;
         }
 
         /* 空状态占位引导 (清空或未选择设备时展示) */
@@ -733,35 +729,39 @@
             color: var(--text-regular);
         }
 
-        /* 附件操作行 */
+        /* 附件操作行 (高度 38px，触控舒适) */
         .upload-actions-bar {
             display: flex;
             align-items: center;
-            gap: 10px;
-            padding: 4px 0 8px 0;
+            gap: 12px;
+            padding: 6px 0 10px 0;
         }
 
         .btn-action-primary {
-            height: 28px;
+            height: 38px;
             background: var(--color-primary);
             color: var(--text-inverse);
             border: none;
             border-radius: 4px;
-            padding: 0 12px;
-            font-size: 13px;
+            padding: 0 16px;
+            font-size: 14px;
             font-weight: 500;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            transition: background 0.15s;
+            gap: 8px;
+            transition: all 0.15s;
         }
 
         .btn-action-primary:hover {
             background: var(--color-primary-hover);
         }
 
-        /* ================= 文件上传列表行样式 (1:1 像素级复刻截图2：定宽、状态对齐、删除靠左) ================= */
+        .btn-action-primary:active {
+            transform: scale(0.98);
+        }
+
+        /* ================= 文件上传列表行样式 (触摸板舒展布局) ================= */
         .uploaded-files-container {
             display: flex;
             flex-direction: column;
@@ -771,7 +771,7 @@
         .file-row-item {
             display: flex;
             align-items: center;
-            padding: 10px 0;
+            padding: 12px 0;
             border-bottom: 1px solid #f0f2f5;
             transition: background 0.15s;
         }
@@ -786,9 +786,9 @@
             justify-content: center;
         }
 
-        /* 文件名称固定宽度 320px，保证右侧绝对对齐 */
+        /* 文件名称固定宽度 360px，保证右侧绝对对齐 */
         .file-title-wrap {
-            width: 320px;
+            width: 360px;
             flex-shrink: 0;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -796,21 +796,21 @@
         }
 
         .file-title-text {
-            font-size: 13.5px;
+            font-size: 14px;
             color: #333333;
             font-weight: 400;
         }
 
         /* 上传状态徽标对齐 */
         .file-upload-status-badge {
-            font-size: 12px;
+            font-size: 13px;
             color: #f5222d;
             background: #fff1f0;
             border: 1px solid #ffa39e;
-            border-radius: 3px;
-            padding: 0 6px;
-            height: 20px;
-            line-height: 18px;
+            border-radius: 4px;
+            padding: 0 8px;
+            height: 24px;
+            line-height: 22px;
             flex-shrink: 0;
             margin-left: 24px;
             display: inline-flex;
@@ -824,47 +824,52 @@
             border-color: #b7eb8f;
         }
 
-        /* 删除按钮靠左放置：紧跟在状态徽标右侧 48px，右侧大面积留白 (1:1 截图2) */
+        /* 删除按钮靠左放置：紧跟在状态徽标右侧 48px */
         .file-row-delete-btn {
             background: #f5222d;
             color: #ffffff;
             border: none;
-            border-radius: 3px;
-            height: 24px;
-            padding: 0 12px;
-            font-size: 12px;
+            border-radius: 4px;
+            height: 32px;
+            padding: 0 16px;
+            font-size: 13px;
             cursor: pointer;
             margin-left: 48px;
             flex-shrink: 0;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            transition: background-color 0.15s;
+            transition: all 0.15s;
         }
 
         .file-row-delete-btn:hover {
             background: #d91b24;
         }
 
-        /* ================= 3. 底部操作栏 (仅确定、取消按钮) ================= */
+        .file-row-delete-btn:active {
+            transform: scale(0.97);
+        }
+
+        /* ================= 3. 底部操作栏 (触摸板 58px 高度，大按钮触控友好) ================= */
         .pc-modal-footer {
-            height: 48px;
+            height: 58px;
             background: #ffffff;
             border-top: 1px solid var(--line-default);
             display: flex;
             align-items: center;
             justify-content: flex-end;
-            padding: 0 20px;
-            gap: 10px;
+            padding: 0 24px;
+            gap: 14px;
             flex-shrink: 0;
         }
 
         .footer-btn {
-            height: 28px;
-            min-width: 58px;
-            padding: 0 14px;
-            font-size: 13.5px;
-            border-radius: 3px;
+            height: 38px;
+            min-width: 96px;
+            padding: 0 20px;
+            font-size: 15px;
+            font-weight: 500;
+            border-radius: 4px;
             cursor: pointer;
             outline: none;
             display: inline-flex;
@@ -873,11 +878,14 @@
             transition: all 0.15s;
         }
 
+        .footer-btn:active {
+            transform: scale(0.98);
+        }
+
         .footer-btn-confirm {
             background: var(--color-primary);
             color: #ffffff;
             border: none;
-            font-weight: 500;
         }
 
         .footer-btn-confirm:hover {
