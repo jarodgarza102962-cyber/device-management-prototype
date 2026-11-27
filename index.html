@@ -435,16 +435,11 @@
             background: #ffffff;
             border: 1px solid #e2e8f0;
             border-radius: 6px;
-            padding: 12px 16px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+            padding: 14px 18px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
             display: flex;
             flex-direction: column;
             gap: 10px;
-            transition: all 0.15s;
-        }
-
-        .batch-dev-value-card:hover {
-            border-color: #cbd5e1;
         }
 
         .batch-card-top-bar {
@@ -456,75 +451,47 @@
         }
 
         .batch-card-name {
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 600;
             color: var(--text-title);
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
         }
 
-        .batch-card-tag {
-            font-size: 12px;
-            background: #f1f5f9;
-            color: #475569;
-            padding: 2px 8px;
-            border-radius: 3px;
+        .batch-card-meta {
+            font-size: 13px;
+            color: #64748b;
             font-weight: 400;
         }
 
-        .batch-card-status-badge {
-            font-size: 12px;
-            color: #00b42a;
-            background: #e8ffea;
-            border: 1px solid #b7eb8f;
-            padding: 2px 8px;
-            border-radius: 3px;
-        }
-
+        /* 两栏纯只读布局，无花哨颜色与标签 */
         .batch-card-values-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px 16px;
-            background: #fafbfc;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px 24px;
+            background: #f8fafc;
             border-radius: 4px;
-            padding: 10px 14px;
+            padding: 12px 16px;
         }
 
         .batch-val-item {
             display: flex;
-            align-items: center;
+            align-items: baseline;
             font-size: 13.5px;
+            line-height: 1.5;
             gap: 6px;
         }
 
         .batch-val-label {
             color: #64748b;
-            min-width: 68px;
+            flex-shrink: 0;
+            min-width: 110px;
         }
 
         .batch-val-content {
-            color: var(--text-primary);
-            font-weight: 500;
-        }
-
-        .batch-inline-input {
-            height: 28px;
-            width: 70px;
-            border: 1px solid var(--line-default);
-            border-radius: 4px;
-            padding: 0 6px;
-            font-size: 13px;
-            color: var(--color-primary);
-            font-weight: 600;
-            background: #ffffff;
-            outline: none;
-            text-align: center;
-        }
-
-        .batch-inline-input:focus {
-            border-color: var(--color-primary);
-            box-shadow: 0 0 0 2px rgba(0, 159, 232, 0.2);
+            color: #1e293b;
+            font-weight: 400;
         }
 
         .tpl-banner-title {
@@ -1423,6 +1390,17 @@
         ];
 
         window.addEventListener("DOMContentLoaded", () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get("mode") === "batch") {
+                currentEntryMode = "batch";
+                selectedDeviceIds = ["DEV_PCR_301", "DEV_CJ_001"];
+                const btnSingle = document.getElementById("btnModeSingle");
+                const btnBatch = document.getElementById("btnModeBatch");
+                if (btnSingle && btnBatch) {
+                    btnBatch.classList.add("active");
+                    btnSingle.classList.remove("active");
+                }
+            }
             renderDeviceCards();
             updateSubtotalInfo();
             updateHeaderTitle();
@@ -1719,36 +1697,24 @@
             const timeStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
             const dateStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
 
-            // ================= 模式二：【一键批量】模式 (展示当前所有设备批量填写的具体默认值) =================
+            // ================= 模式二：【一键批量】模式 (纯只读两栏展示对应模板组件及默认值) =================
             if (currentEntryMode === "batch") {
                 if (attachWrap) attachWrap.style.display = "none";
-                if (confirmBtn) confirmBtn.textContent = `⚡ 一键批量保存记录 (共 ${selectedDeviceIds.length} 台)`;
+                if (confirmBtn) confirmBtn.textContent = `批量保存（共${selectedDeviceIds.length}台）`;
 
                 const selectedDevs = mockDeviceDatabase.filter(d => selectedDeviceIds.includes(d.id));
 
                 container.innerHTML = `
-                    <!-- 批量看板顶部核对提示条 -->
-                    <div class="batch-summary-header">
-                        <div style="display:flex; align-items:center; gap:10px;">
-                            <span class="batch-summary-badge">⚡ 一键批量新增模式</span>
-                            <span>已选 <strong>${selectedDevs.length}</strong> 台设备待一键录入</span>
-                        </div>
-                        <div style="font-size:13px; color:#64748b;">
-                            统一记录时间: <strong style="color:#1d2129;">${timeStr}</strong> | 记录人: <strong style="color:#1d2129;">李珂02</strong>
-                        </div>
-                    </div>
-
-                    <!-- 所有设备批量写入的值卡片清单 (一目了然展示每台设备的默认/实测字段) -->
+                    <!-- 所有设备批量写入清单 (纯只读两栏展示) -->
                     <div class="batch-cards-list">
                         ${selectedDevs.map((dev, idx) => `
                             <div class="batch-dev-value-card">
                                 <div class="batch-card-top-bar">
                                     <div class="batch-card-name">
                                         <span>${idx + 1}. ${dev.name}</span>
-                                        <span class="batch-card-tag">${dev.devType}</span>
-                                        <span style="font-size:12px; color:#64748b; font-weight:400;">编号: ${dev.devCode}</span>
+                                        <span class="batch-card-meta">类型: ${dev.devType}</span>
+                                        <span class="batch-card-meta">编号: ${dev.devCode}</span>
                                     </div>
-                                    <span class="batch-card-status-badge">✓ 必填项已加载合规默认值</span>
                                 </div>
                                 <div class="batch-card-values-grid">
                                     ${renderBatchDeviceValues(dev)}
@@ -2197,124 +2163,132 @@
             }
         }
 
-        // 渲染单台设备在【一键批量】模式下的具体默认值展示字段 (支持关键数值行内编辑微调)
+        // 渲染单台设备在【一键批量】模式下的组件及默认值 (纯只读两栏展示，无编辑框，无彩色/标签样式，为空显示“为空”)
         function renderBatchDeviceValues(dev) {
             const tpl = dev.templateType;
             if (tpl === "tpl_fridge") {
                 return `
                     <div class="batch-val-item">
-                        <span class="batch-val-label">箱内温度:</span>
-                        <span class="batch-val-content">
-                            <input type="number" class="batch-inline-input" value="4.0" step="0.1" title="支持现场修改实测温度"> ℃
-                        </span>
-                    </div>
-                    <div class="batch-val-item">
-                        <span class="batch-val-label">设定目标:</span>
+                        <span class="batch-val-label">箱内当前温度(℃):</span>
                         <span class="batch-val-content">4.0 ℃</span>
                     </div>
                     <div class="batch-val-item">
-                        <span class="batch-val-label">温控显示:</span>
-                        <span class="batch-val-content" style="color:#00b42a;">正常</span>
+                        <span class="batch-val-label">设定目标温度(℃):</span>
+                        <span class="batch-val-content">4.0 ℃</span>
                     </div>
                     <div class="batch-val-item">
-                        <span class="batch-val-label">冷凝结霜:</span>
+                        <span class="batch-val-label">运行状态:</span>
+                        <span class="batch-val-content">正常</span>
+                    </div>
+                    <div class="batch-val-item">
+                        <span class="batch-val-label">冷凝结霜检查:</span>
                         <span class="batch-val-content">正常无结冰</span>
                     </div>
                     <div class="batch-val-item">
-                        <span class="batch-val-label">门封密封:</span>
+                        <span class="batch-val-label">门封及密封性:</span>
                         <span class="batch-val-content">良好紧实</span>
                     </div>
                     <div class="batch-val-item">
-                        <span class="batch-val-label">超温报警:</span>
-                        <span class="batch-val-content" style="color:#00b42a;">正常受控</span>
+                        <span class="batch-val-label">超温报警自检:</span>
+                        <span class="batch-val-content">正常受控</span>
+                    </div>
+                    <div class="batch-val-item">
+                        <span class="batch-val-label">巡检备注:</span>
+                        <span class="batch-val-content">为空</span>
                     </div>
                 `;
             } else if (tpl === "tpl_pathology") {
                 return `
                     <div class="batch-val-item">
                         <span class="batch-val-label">运行状态:</span>
-                        <span class="batch-val-content" style="color:#00b42a;">运转正常</span>
+                        <span class="batch-val-content">运转正常</span>
                     </div>
                     <div class="batch-val-item">
-                        <span class="batch-val-label">石蜡缸温度:</span>
-                        <span class="batch-val-content">
-                            <input type="number" class="batch-inline-input" value="62.0" step="0.5" title="点击微调石蜡温度"> ℃
-                        </span>
+                        <span class="batch-val-label">石蜡缸温度(℃):</span>
+                        <span class="batch-val-content">62.0 ℃</span>
                     </div>
                     <div class="batch-val-item">
-                        <span class="batch-val-label">试剂液位:</span>
+                        <span class="batch-val-label">试剂缸液位:</span>
                         <span class="batch-val-content">达标充足</span>
                     </div>
                     <div class="batch-val-item">
-                        <span class="batch-val-label">抽气排废:</span>
+                        <span class="batch-val-label">抽气排废滤芯:</span>
                         <span class="batch-val-content">滤芯良好</span>
                     </div>
                     <div class="batch-val-item">
-                        <span class="batch-val-label">组织盒架:</span>
+                        <span class="batch-val-label">组织脱水吊篮:</span>
                         <span class="batch-val-content">归位到位</span>
                     </div>
                     <div class="batch-val-item">
-                        <span class="batch-val-label">故障自检:</span>
-                        <span class="batch-val-content" style="color:#00b42a;">无报警</span>
+                        <span class="batch-val-label">故障自检报警:</span>
+                        <span class="batch-val-content">无报警</span>
+                    </div>
+                    <div class="batch-val-item">
+                        <span class="batch-val-label">巡检备注:</span>
+                        <span class="batch-val-content">为空</span>
                     </div>
                 `;
             } else if (tpl === "tpl_uv") {
                 return `
                     <div class="batch-val-item">
-                        <span class="batch-val-label">照射时长:</span>
-                        <span class="batch-val-content">
-                            <input type="number" class="batch-inline-input" value="60" step="10" title="点击微调照射时长"> min
-                        </span>
+                        <span class="batch-val-label">紫外照射时长(min):</span>
+                        <span class="batch-val-content">60 min</span>
                     </div>
                     <div class="batch-val-item">
-                        <span class="batch-val-label">人员清场:</span>
-                        <span class="batch-val-content" style="color:#00b42a;">已确认清场</span>
+                        <span class="batch-val-label">人员清场确认:</span>
+                        <span class="batch-val-content">已确认清场</span>
                     </div>
                     <div class="batch-val-item">
-                        <span class="batch-val-label">警示标识:</span>
+                        <span class="batch-val-label">警示标识悬挂:</span>
                         <span class="batch-val-content">已悬挂警示牌</span>
                     </div>
                     <div class="batch-val-item">
-                        <span class="batch-val-label">灯管状态:</span>
+                        <span class="batch-val-label">紫外灯管状态:</span>
                         <span class="batch-val-content">发光稳定合格</span>
                     </div>
                     <div class="batch-val-item">
-                        <span class="batch-val-label">定时控制:</span>
+                        <span class="batch-val-label">定时器运转:</span>
                         <span class="batch-val-content">自动倒计时</span>
                     </div>
                     <div class="batch-val-item">
                         <span class="batch-val-label">照射后通风:</span>
                         <span class="batch-val-content">30min通风</span>
                     </div>
+                    <div class="batch-val-item">
+                        <span class="batch-val-label">巡检备注:</span>
+                        <span class="batch-val-content">为空</span>
+                    </div>
                 `;
             } else {
                 // 超净工作台 / 默认
                 return `
                     <div class="batch-val-item">
-                        <span class="batch-val-label">紫外照射:</span>
-                        <span class="batch-val-content">
-                            <input type="number" class="batch-inline-input" value="30" step="5" title="点击微调紫外照射时长"> min
-                        </span>
+                        <span class="batch-val-label">紫外照射时长(min):</span>
+                        <span class="batch-val-content">30 min</span>
                     </div>
                     <div class="batch-val-item">
-                        <span class="batch-val-label">风机自检:</span>
-                        <span class="batch-val-content" style="color:#00b42a;">正常开启</span>
+                        <span class="batch-val-label">风机运转状态:</span>
+                        <span class="batch-val-content">正常开启</span>
                     </div>
                     <div class="batch-val-item">
-                        <span class="batch-val-label">乙醇擦拭:</span>
+                        <span class="batch-val-label">台面乙醇消毒:</span>
                         <span class="batch-val-content">已完成消毒</span>
                     </div>
                     <div class="batch-val-item">
-                        <span class="batch-val-label">前窗复位:</span>
+                        <span class="batch-val-label">玻璃前窗高度:</span>
                         <span class="batch-val-content">高度已复位</span>
                     </div>
                     <div class="batch-val-item">
-                        <span class="batch-val-label">台面状态:</span>
+                        <span class="batch-val-label">操作台面洁净度:</span>
                         <span class="batch-val-content">洁净无杂物</span>
                     </div>
                     <div class="batch-val-item">
-                        <span class="batch-val-label">运行开关:</span>
-                        <span class="batch-val-content" style="color:#00b42a;">开机</span>
+                        <span class="batch-val-label">运行开关状态:</span>
+                        <span class="batch-val-content">开机</span>
+                    </div>
+                    <div class="batch-val-item">
+                        <span class="batch-val-label">巡检备注:</span>
+                        <span class="batch-val-content">为空</span>
                     </div>
                 `;
             }
@@ -2327,10 +2301,10 @@
                 return;
             }
             if (currentEntryMode === "batch") {
-                showToast(`✓ 一键批量保存成功！已为所选的 ${count} 台设备写入合规台账流水。`, "success");
+                showToast(`批量保存成功！已保存共 ${count} 台设备记录`, "success");
             } else {
                 const dev = mockDeviceDatabase.find(d => selectedDeviceIds.includes(d.id));
-                showToast(`✓ 保存成功！已为【${dev ? dev.name : '设备'}】写入单条详细台账记录。`, "success");
+                showToast(`保存成功！已为【${dev ? dev.name : '设备'}】写入记录`, "success");
             }
         }
 
