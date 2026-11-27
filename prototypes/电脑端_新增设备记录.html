@@ -1,0 +1,2039 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新增记录 - 电脑端外部调用</title>
+    <style>
+        :root {
+            /* 严格对照系统真机截图与 CNAS 规范 */
+            --color-primary: #009fe8;
+            --color-primary-hover: #0087c7;
+            --color-primary-active: #0077b6;
+            --color-primary-subtle: #eaf4fd;
+            --color-primary-selected: #ecf5ff;
+
+            /* 中性色阶与边框系统 (杜绝纯黑 #000000) */
+            --line-heavy: #86909c;
+            --line-dark: #c9cdd4;
+            --line-default: #dcdfe6;
+            --line-table: #e5e6eb;
+            --line-light: #f2f3f5;
+
+            --fill-dark: #4e5969;
+            --fill-medium: #86909c;
+            --fill-hover: #e5e7eb;
+            --fill-head-light: #f2f4f8;
+            --fill-page: #f6f7fb;
+
+            --text-title: #1d2129;
+            --text-primary: #303133;
+            --text-regular: #606266;
+            --text-secondary: #909399;
+            --text-disabled: #c0c4cc;
+            --text-inverse: #ffffff;
+
+            /* 语义状态辅助色 */
+            --status-success-text: #00b42a;
+            --status-success-border: #b7eb8f;
+            --status-success-bg: #e8ffea;
+            --status-error-text: #f5222d;
+
+            /* 规范强制基准字体栈 */
+            --font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--fill-page);
+            color: var(--text-primary);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            user-select: none;
+            font-size: 14px;
+        }
+
+        /* 顶部模拟外部系统调用工具条 (演示切换场景) */
+        .ext-sim-bar {
+            height: 32px;
+            background: #2b3a4a;
+            color: var(--text-inverse);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            font-size: 12px;
+            flex-shrink: 0;
+            z-index: 50;
+        }
+
+        .ext-sim-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .ext-sim-badge {
+            background: rgba(255, 255, 255, 0.16);
+            padding: 2px 8px;
+            border-radius: 4px;
+            color: #00b42a;
+            font-family: monospace;
+            font-size: 12px;
+        }
+
+        .ext-sim-select {
+            background: #3d4e61;
+            border: 1px solid #4f637a;
+            color: #ffffff;
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 3px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        /* 电脑端主录入界面容器 (1:1 还原弹窗) */
+        .pc-modal-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #ffffff;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* ================= 1. 顶部标题栏 (1:1 截图：纯白背景、无返回、居中标题、右侧深蓝关闭按钮) ================= */
+        .pc-modal-header {
+            height: 42px;
+            background: #ffffff;
+            border-bottom: 1px solid var(--line-default);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .pc-modal-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-title);
+            letter-spacing: 0.5px;
+        }
+
+        /* 截图中的右侧深蓝关闭方块 */
+        .pc-modal-close-btn {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 44px;
+            height: 42px;
+            background: var(--color-primary);
+            color: #ffffff;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 300;
+            line-height: 1;
+            transition: background-color 0.15s;
+        }
+
+        .pc-modal-close-btn:hover {
+            background: var(--color-primary-hover);
+        }
+
+        /* ================= 2. 核心双栏主体 ================= */
+        .pc-modal-body {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* ================= 2.1 左侧设备区域 (宽 280px，支持类型下拉、模糊查询、完整卡片) ================= */
+        .pc-left-sidebar {
+            width: 280px;
+            min-width: 260px;
+            border-right: 1px solid var(--line-table);
+            background: #fbfbfd;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        /* 左侧筛选区：只读工作台 + 设备类型下拉单选 + 模糊查询输入框 */
+        .left-filter-area {
+            padding: 10px 12px;
+            background: #ffffff;
+            border-bottom: 1px solid var(--line-table);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .left-select-input {
+            width: 100%;
+            height: 28px;
+            border: 1px solid var(--line-default);
+            border-radius: 4px;
+            padding: 0 22px 0 8px;
+            font-size: 12px;
+            color: var(--text-primary);
+            outline: none;
+            background: #ffffff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%23909399' d='M0 0l5 5 5-5z'/%3E%3C/svg%3E") no-repeat calc(100% - 8px) center;
+            appearance: none;
+            -webkit-appearance: none;
+            cursor: pointer;
+            box-sizing: border-box;
+        }
+
+        .left-select-input:focus {
+            border-color: var(--color-primary);
+        }
+
+        .left-search-input {
+            width: 100%;
+            height: 28px;
+            border: 1px solid var(--line-default);
+            border-radius: 4px;
+            padding: 0 8px;
+            font-size: 12.5px;
+            color: var(--text-primary);
+            outline: none;
+            background: #ffffff;
+            transition: border-color 0.15s;
+        }
+
+        .left-search-input:focus {
+            border-color: var(--color-primary);
+        }
+
+        /* 全选与数值小计工具条 */
+        .left-subtotal-toolbar {
+            height: 32px;
+            background: #f4f6fa;
+            border-bottom: 1px solid var(--line-table);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 12px;
+            font-size: 12px;
+            color: var(--text-regular);
+            flex-shrink: 0;
+        }
+
+        .select-all-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            color: var(--text-primary);
+            user-select: none;
+        }
+
+        .select-all-label input[type="checkbox"] {
+            accent-color: var(--color-primary);
+            width: 14px;
+            height: 14px;
+            cursor: pointer;
+        }
+
+        .subtotal-info {
+            font-size: 12px;
+            color: var(--text-regular);
+        }
+
+        .subtotal-info strong {
+            color: var(--color-primary);
+            font-weight: 600;
+        }
+
+        .clear-dev-link {
+            font-size: 12px;
+            color: var(--color-primary);
+            text-decoration: none;
+            cursor: pointer;
+            user-select: none;
+            padding: 2px 4px;
+            border-radius: 2px;
+            transition: all 0.15s ease;
+        }
+
+        .clear-dev-link:hover {
+            text-decoration: underline;
+            color: var(--color-primary-hover);
+        }
+
+        /* 待填写记录的设备卡片列表 */
+        .left-devices-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        /* 设备卡片 (完整展示6大字段) */
+        .pc-dev-card {
+            background: #ffffff;
+            border: 1px solid var(--line-default);
+            border-radius: 4px;
+            padding: 9px 12px;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.15s ease;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pc-dev-card:hover {
+            border-color: var(--line-heavy);
+            background: #fafbfd;
+        }
+
+        /* 选中态：淡蓝底高亮 + 蓝边框 + 右上角折角对勾 */
+        .pc-dev-card.active {
+            border-color: var(--color-primary);
+            background: var(--color-primary-selected);
+        }
+
+        .card-check-corner {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 22px;
+            height: 22px;
+            background: var(--color-primary);
+            clip-path: polygon(100% 0, 0 0, 100% 100%);
+            display: none;
+            align-items: flex-start;
+            justify-content: flex-end;
+            padding-top: 2px;
+            padding-right: 2px;
+            box-sizing: border-box;
+            z-index: 5;
+        }
+
+        .pc-dev-card.active .card-check-corner {
+            display: flex;
+        }
+
+        .dev-card-name {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-title);
+            line-height: 1.4;
+            margin-bottom: 4px;
+        }
+
+        .pc-dev-card.active .dev-card-name {
+            color: var(--color-primary);
+        }
+
+        .dev-card-field-row {
+            font-size: 12px;
+            color: var(--text-regular);
+            line-height: 1.55;
+            display: flex;
+            align-items: baseline;
+        }
+
+        .pc-dev-card.active .dev-card-field-row {
+            color: #0077b6;
+        }
+
+        .dev-card-field-label {
+            color: var(--text-regular);
+            white-space: nowrap;
+        }
+
+        .pc-dev-card.active .dev-card-field-label {
+            color: #0077b6;
+        }
+
+        .dev-card-field-val {
+            margin-left: 4px;
+            word-break: break-all;
+        }
+
+        /* ================= 2.2 右侧录入区域 (无顶部设备信息大卡片，直接是记录模板横幅 + 表单) ================= */
+        .pc-right-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background: #ffffff;
+        }
+
+        /* 记录模板横幅：标题是记录类型名称，后面跟频次 (1:1 截图1与截图2 | 运行 ⓘ 使用时需要) */
+        .record-template-banner {
+            height: 38px;
+            background: #e6f4ff;
+            border-bottom: 1px solid #d4e8fa;
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            gap: 16px;
+            font-size: 13.5px;
+            flex-shrink: 0;
+        }
+
+        .tpl-banner-title {
+            color: var(--color-primary);
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .tpl-banner-title::before {
+            content: "";
+            display: inline-block;
+            width: 3px;
+            height: 14px;
+            background: var(--color-primary);
+            border-radius: 1px;
+        }
+
+        .tpl-banner-frequency {
+            color: var(--color-primary);
+            font-size: 13.5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tpl-freq-icon {
+            flex-shrink: 0;
+            width: 14px;
+            height: 14px;
+        }
+
+        /* 表单内容滚动区域 (统一 16px 舒展间距) */
+        .form-scroll-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            background: #ffffff;
+        }
+
+        /* 静态文本说明行 (浅灰底色通栏，无冒号) */
+        .static-text-row {
+            background: #f5f5f5;
+            border-radius: 2px;
+            padding: 6px 12px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-size: 13.5px;
+            color: var(--text-primary);
+        }
+
+        .static-text-label {
+            font-weight: 500;
+            color: var(--text-title);
+            min-width: 60px;
+        }
+
+        .static-text-val {
+            color: var(--text-regular);
+            font-size: 13.5px;
+        }
+
+        /* 表单网格体系 (行距 16px，列距 20px) */
+        #dynamicFormContainer {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .form-grid-3col {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            column-gap: 20px;
+            row-gap: 16px;
+        }
+
+        .form-grid-2col {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            column-gap: 20px;
+            row-gap: 16px;
+        }
+
+        .form-grid-1col {
+            display: grid;
+            grid-template-columns: 1fr;
+            row-gap: 16px;
+        }
+
+        /* 表单输入项 (Label 靠右 80px，无冒号) */
+        .form-item {
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            gap: 6px;
+        }
+
+        .form-item.align-top {
+            align-items: flex-start;
+        }
+
+        .form-label {
+            width: 80px;
+            min-width: 80px;
+            text-align: right;
+            padding-right: 4px;
+            color: var(--text-primary);
+            font-size: 13.5px;
+            font-weight: 400;
+            line-height: 28px;
+            white-space: nowrap;
+        }
+
+        .form-label.required::before {
+            content: "*";
+            color: var(--status-error-text);
+            font-weight: bold;
+            margin-right: 2px;
+        }
+
+        .form-control-wrap {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+        }
+
+        .form-input {
+            width: 100%;
+            height: 28px;
+            border: 1px solid var(--line-default);
+            border-radius: 4px;
+            padding: 0 10px;
+            font-size: 13px;
+            color: var(--text-primary);
+            outline: none;
+            background: #ffffff;
+            transition: all 0.15s;
+        }
+
+        .form-input:focus {
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 2px rgba(0, 159, 232, 0.15);
+        }
+
+        .form-input[readonly] {
+            background-color: var(--fill-head-light);
+            color: var(--text-regular);
+            cursor: default;
+        }
+
+        .form-select {
+            width: 100%;
+            height: 28px;
+            border: 1px solid var(--line-default);
+            border-radius: 4px;
+            padding: 0 24px 0 10px;
+            font-size: 13px;
+            color: var(--text-primary);
+            outline: none;
+            background: #ffffff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%23909399' d='M0 0l5 5 5-5z'/%3E%3C/svg%3E") no-repeat calc(100% - 8px) center;
+            appearance: none;
+            -webkit-appearance: none;
+            cursor: pointer;
+        }
+
+        .form-select:focus {
+            border-color: var(--color-primary);
+        }
+
+        .form-textarea {
+            width: 100%;
+            min-height: 56px;
+            border: 1px solid var(--line-default);
+            border-radius: 4px;
+            padding: 6px 10px;
+            font-size: 13px;
+            color: var(--text-primary);
+            outline: none;
+            font-family: inherit;
+            line-height: 1.5;
+            resize: vertical;
+        }
+
+        .form-textarea:focus {
+            border-color: var(--color-primary);
+        }
+
+        /* 单选组与多选组排布 (1:1 截图2：选中文本与图标变主蓝，支持一键清空) */
+        .radio-options-group {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .radio-item-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            font-size: 13.5px;
+            color: #333333;
+            user-select: none;
+            transition: color 0.15s;
+        }
+
+        .radio-item-label input[type="radio"] {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            border: 1px solid var(--line-heavy);
+            border-radius: 50%;
+            outline: none;
+            margin: 0;
+            cursor: pointer;
+            background: #ffffff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+            flex-shrink: 0;
+        }
+
+        .radio-item-label input[type="radio"]:checked {
+            border-color: var(--color-primary);
+        }
+
+        .radio-item-label input[type="radio"]:checked::after {
+            content: "";
+            width: 6px;
+            height: 6px;
+            background: var(--color-primary);
+            border-radius: 50%;
+        }
+
+        /* 选中项文本 1:1 匹配截图高亮为主蓝色 */
+        .radio-item-label input[type="radio"]:checked + span,
+        .radio-item-label:has(input[type="radio"]:checked) span {
+            color: var(--color-primary) !important;
+        }
+
+        /* 清空文字按钮 */
+        .clear-link-btn {
+            color: var(--color-primary);
+            font-size: 13px;
+            cursor: pointer;
+            text-decoration: none;
+            margin-left: 10px;
+            white-space: nowrap;
+            user-select: none;
+        }
+
+        .clear-link-btn:hover {
+            color: var(--color-primary-hover);
+            text-decoration: underline;
+        }
+
+        /* 空状态占位引导 (清空或未选择设备时展示) */
+        .form-empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 90px 20px;
+            text-align: center;
+        }
+
+        .empty-icon-wrap {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: #f0f7ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+
+        .empty-state-title {
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text-title);
+            margin-bottom: 8px;
+        }
+
+        .empty-state-desc {
+            font-size: 13px;
+            color: var(--text-regular);
+            line-height: 1.6;
+            max-width: 400px;
+        }
+
+        /* 附件资料真实业务标题栏 */
+        .attachment-section-wrap {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px dashed #e8e8e8;
+        }
+
+        .section-title-bar {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .section-title-text {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-title);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .section-title-text::before {
+            content: "";
+            width: 3px;
+            height: 13px;
+            background: var(--color-primary);
+            border-radius: 1px;
+            display: inline-block;
+        }
+
+        .section-title-sub {
+            font-size: 12px;
+            color: var(--text-regular);
+        }
+
+        /* 附件操作行 */
+        .upload-actions-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 4px 0 8px 0;
+        }
+
+        .btn-action-primary {
+            height: 28px;
+            background: var(--color-primary);
+            color: var(--text-inverse);
+            border: none;
+            border-radius: 4px;
+            padding: 0 12px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: background 0.15s;
+        }
+
+        .btn-action-primary:hover {
+            background: var(--color-primary-hover);
+        }
+
+        /* ================= 文件上传列表行样式 (1:1 像素级复刻截图2：定宽、状态对齐、删除靠左) ================= */
+        .uploaded-files-container {
+            display: flex;
+            flex-direction: column;
+            border-top: 1px solid #f0f2f5;
+        }
+
+        .file-row-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f2f5;
+            transition: background 0.15s;
+        }
+
+        .file-icon-box {
+            width: 36px;
+            height: 42px;
+            margin-right: 14px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 文件名称固定宽度 320px，保证右侧绝对对齐 */
+        .file-title-wrap {
+            width: 320px;
+            flex-shrink: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .file-title-text {
+            font-size: 13.5px;
+            color: #333333;
+            font-weight: 400;
+        }
+
+        /* 上传状态徽标对齐 */
+        .file-upload-status-badge {
+            font-size: 12px;
+            color: #f5222d;
+            background: #fff1f0;
+            border: 1px solid #ffa39e;
+            border-radius: 3px;
+            padding: 0 6px;
+            height: 20px;
+            line-height: 18px;
+            flex-shrink: 0;
+            margin-left: 24px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .file-upload-status-badge.uploaded {
+            color: #52c41a;
+            background: #f6ffed;
+            border-color: #b7eb8f;
+        }
+
+        /* 删除按钮靠左放置：紧跟在状态徽标右侧 48px，右侧大面积留白 (1:1 截图2) */
+        .file-row-delete-btn {
+            background: #f5222d;
+            color: #ffffff;
+            border: none;
+            border-radius: 3px;
+            height: 24px;
+            padding: 0 12px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-left: 48px;
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.15s;
+        }
+
+        .file-row-delete-btn:hover {
+            background: #d91b24;
+        }
+
+        /* ================= 3. 底部操作栏 (仅确定、取消按钮) ================= */
+        .pc-modal-footer {
+            height: 48px;
+            background: #ffffff;
+            border-top: 1px solid var(--line-default);
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 0 20px;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .footer-btn {
+            height: 28px;
+            min-width: 58px;
+            padding: 0 14px;
+            font-size: 13.5px;
+            border-radius: 3px;
+            cursor: pointer;
+            outline: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s;
+        }
+
+        .footer-btn-confirm {
+            background: var(--color-primary);
+            color: #ffffff;
+            border: none;
+            font-weight: 500;
+        }
+
+        .footer-btn-confirm:hover {
+            background: var(--color-primary-hover);
+        }
+
+        .footer-btn-confirm.disabled {
+            background: #d9d9d9 !important;
+            color: #8c8c8c !important;
+            cursor: not-allowed !important;
+            border-color: #d9d9d9 !important;
+            box-shadow: none !important;
+        }
+
+        .footer-btn-cancel {
+            background: #ffffff;
+            color: var(--text-regular);
+            border: 1px solid var(--line-dark);
+        }
+
+        .footer-btn-cancel:hover {
+            border-color: var(--line-heavy);
+            color: var(--text-primary);
+            background: var(--fill-head-light);
+        }
+
+        /* Toast 浮层提示 (窗口正中间居中，1:1 像素级复刻真机截图) */
+        .toast-notify {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.96);
+            background: #fffbe6;
+            border: 1px solid #ffe58f;
+            border-radius: 4px;
+            padding: 10px 18px;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+            z-index: 9999;
+        }
+
+        .toast-notify.show {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .toast-icon-wrap {
+            width: 18px;
+            height: 18px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .toast-msg-text {
+            font-size: 14px;
+            color: #c87a1e;
+            line-height: 1.4;
+            white-space: nowrap;
+        }
+
+        .toast-close-btn {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #bfbfbf;
+            font-size: 16px;
+            line-height: 1;
+            cursor: pointer;
+            padding: 0 0 0 8px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.15s;
+            flex-shrink: 0;
+        }
+
+        .toast-close-btn:hover {
+            color: #8c8c8c;
+        }
+
+        /* 成功状态适配 */
+        .toast-notify.success {
+            background: #f6ffed;
+            border-color: #b7eb8f;
+        }
+
+        .toast-notify.success .toast-msg-text {
+            color: #52c41a;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-4px); }
+            40%, 80% { transform: translateX(4px); }
+        }
+
+        .shake-animation {
+            animation: shake 0.35s ease-in-out;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- 顶部模拟外部系统调用工具条 (演示切换场景) -->
+    <div class="ext-sim-bar">
+        <div class="ext-sim-left">
+            <span>💻 外部系统调用模拟</span>
+            <span class="ext-sim-badge">STATUS: 200 OK</span>
+            <span>当前调用接口: <code style="color:#fce996;" id="simApiUrlDisplay">addRecord?recordTypr=use&workCode=F_GZT1</code></span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <span>模拟业务模板:</span>
+            <select class="ext-sim-select" id="callTypeSelector" onchange="switchRecordTemplate(this.value)">
+                <option value="use_uv" selected>使用记录 (紫外车/通用字典)</option>
+                <option value="use_pathology">使用记录 (病理科/试剂耗材)</option>
+                <option value="maintain">维护记录 (定期保养)</option>
+                <option value="calibrate">校准记录 (每月一次)</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- 电脑端录入主弹窗 (1:1 还原) -->
+    <div class="pc-modal-container">
+
+        <!-- 弹窗顶部栏：纯白背景、无返回、居中大标题固定为新增记录、右侧深蓝关闭按钮 (1:1 截图) -->
+        <div class="pc-modal-header">
+            <div class="pc-modal-title" id="pageHeaderTitle">新增记录</div>
+            <button class="pc-modal-close-btn" title="关闭 (Esc)" onclick="handleCloseModal()">×</button>
+        </div>
+
+        <!-- 核心双栏主体 -->
+        <div class="pc-modal-body">
+
+            <!-- ================= 左侧设备区域 (设备类型下拉 + 模糊查询 + 全选小计 + 完整6项卡片) ================= -->
+            <div class="pc-left-sidebar">
+                
+                <!-- 设备类型单选下拉 + 模糊查询框 -->
+                <div class="left-filter-area">
+                    <!-- 设备类型下拉单选 -->
+                    <select class="left-select-input" id="devTypeSelectFilter" onchange="handleDevTypeChange(this.value)">
+                        <option value="ALL">全部类型</option>
+                        <option value="室内质控设备">室内质控设备</option>
+                        <option value="PCR基因扩增仪">PCR基因扩增仪</option>
+                        <option value="超净工作台">超净工作台</option>
+                        <option value="医用低温箱">医用低温箱</option>
+                        <option value="冷藏箱">冷藏箱</option>
+                        <option value="紫外灯车">紫外灯车</option>
+                        <option value="组织脱水机">组织脱水机</option>
+                    </select>
+                    <input type="text" class="left-search-input" id="devKeywordSearch" placeholder="输入设备名称、编号搜索..." oninput="handleSearchInput()">
+                </div>
+
+                <!-- 全选与数值小计工具条 (带清空交互) -->
+                <div class="left-subtotal-toolbar">
+                    <label class="select-all-label">
+                        <input type="checkbox" id="selectAllCheckbox" onchange="handleToggleSelectAll(this.checked)">
+                        <span>全选</span>
+                    </label>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span class="subtotal-info" id="leftSubtotalInfo">
+                            已选 <strong>1</strong> 台
+                        </span>
+                        <a href="javascript:void(0)" class="clear-dev-link" id="clearAllDevLink" onclick="handleClearAllDevices()" title="清空已选设备">清空</a>
+                    </div>
+                </div>
+                
+                <!-- 待填写记录的设备卡片列表 (展示完整6行信息) -->
+                <div class="left-devices-list" id="deviceCardListContainer">
+                    <!-- JS 动态渲染卡片 -->
+                </div>
+            </div>
+
+            <!-- ================= 右侧录入区域 (无顶部设备资料大卡片，直接是记录模板横幅 + 表单) ================= -->
+            <div class="pc-right-content">
+
+                <!-- 记录模板横幅：标题是记录类型名称，后面跟频次 (1:1 截图1与截图2) -->
+                <div class="record-template-banner">
+                    <div class="tpl-banner-title" id="tplBannerTitle">运行</div>
+                    <div class="tpl-banner-frequency" id="tplBannerFreq">
+                        <svg class="tpl-freq-icon" viewBox="0 0 16 16" width="14" height="14" fill="none">
+                            <circle cx="8" cy="8" r="8" fill="#009fe8"/>
+                            <path d="M8 3.5V8.5M8 11V12" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round"/>
+                        </svg>
+                        <span id="tplFreqText">使用时需要</span>
+                    </div>
+                </div>
+
+                <!-- 动态丰富表单滚动区 (统一 16px 舒展间距) -->
+                <div class="form-scroll-body" id="formScrollBody">
+
+                    <!-- 动态表单组件群容器 -->
+                    <div id="dynamicFormContainer">
+                        <!-- 由 JS 渲染 -->
+                    </div>
+
+                    <!-- 附件资料区域 (贴近真实医学/检验设备管理场景：现场原始巡检单、高拍仪扫描件、质控记录单) -->
+                    <div class="attachment-section-wrap" id="attachmentSectionWrap">
+                        <div class="section-title-bar">
+                            <span class="section-title-text">附件资料</span>
+                            <span class="section-title-sub">（支持上传纸质巡检单、温湿度记录纸高拍仪扫查件、仪器质控凭证等）</span>
+                        </div>
+                        <div class="upload-actions-bar">
+                            <button type="button" class="btn-action-primary" onclick="mockCameraScan()">连接高拍仪</button>
+                            <button type="button" class="btn-action-primary" onclick="mockSelectFile()">选择文件</button>
+                        </div>
+                        
+                        <div class="uploaded-files-container" id="uploadedFilesContainer">
+                            <!-- 由 JS 渲染文件列表 -->
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- 底部操作按钮栏：仅保留【确定】与【取消】(未选设备时整栏隐藏) -->
+                <div class="pc-modal-footer" id="pcModalFooter">
+                    <button type="button" class="footer-btn footer-btn-confirm" id="btnConfirmSubmit" onclick="handleSubmitForm()">确定</button>
+                    <button type="button" class="footer-btn footer-btn-cancel" onclick="handleCloseModal()">取消</button>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- 拦截校验提示 Toast (1:1 像素级复刻真机截图) -->
+    <div class="toast-notify" id="toastNotify">
+        <div class="toast-icon-wrap" id="toastIconWrap">
+            <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
+                <circle cx="8" cy="8" r="8" fill="#e6a23c"/>
+                <path d="M8 3.8v5.2M8 11.2v1" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+        </div>
+        <span class="toast-msg-text" id="toastMsg">请选择相同记录模板的设备</span>
+        <button type="button" class="toast-close-btn" title="关闭提示" onclick="hideToast()">×</button>
+    </div>
+
+    <script>
+        // ================= 设备数据库 (按设备名称配置，去除工作台；配置allowBatch支持方案B自动判断) =================
+        // ================= 设备数据库 (真实区分：超净工作台、医用低温箱/冷藏箱、PCR仪、紫外车等各自不同模板) =================
+        const mockDeviceDatabase = [
+            {
+                id: "DEV_PCR_301",
+                name: "PCR超净工作台",
+                devType: "超净工作台",
+                assetCode: "FA-2025-0016",
+                devCode: "PCR-CLEAN-301",
+                templateType: "tpl_cleanbench",
+                templateName: "超净工作台运行记录",
+                frequency: "使用时需要",
+                allowBatch: true
+            },
+            {
+                id: "DEV_CJ_001",
+                name: "超净工作台①",
+                devType: "超净工作台",
+                assetCode: "FA-2024-0021",
+                devCode: "CJ-01-01",
+                templateType: "tpl_cleanbench",
+                templateName: "超净工作台运行记录",
+                frequency: "使用时需要",
+                allowBatch: true
+            },
+            {
+                id: "DEV_DW_004",
+                name: "医用低温箱④",
+                devType: "医用低温箱",
+                assetCode: "FA-2024-0044",
+                devCode: "DW-04-004",
+                templateType: "tpl_fridge",
+                templateName: "医用低温/冷藏箱温湿度监控记录",
+                frequency: "每日两次",
+                allowBatch: true
+            },
+            {
+                id: "DEV_LC_005",
+                name: "医用冷藏箱⑤",
+                devType: "冷藏箱",
+                assetCode: "FA-2024-0055",
+                devCode: "LC-05-005",
+                templateType: "tpl_fridge",
+                templateName: "医用低温/冷藏箱温湿度监控记录",
+                frequency: "每日两次",
+                allowBatch: true
+            },
+            {
+                id: "DEV_3S_003",
+                name: "3s基因扩增仪",
+                devType: "PCR基因扩增仪",
+                assetCode: "FA-2025-0003",
+                devCode: "PCR-3S-003",
+                templateType: "tpl_pcr",
+                templateName: "PCR基因扩增仪运行记录",
+                frequency: "使用时需要",
+                allowBatch: true
+            },
+            {
+                id: "DEV_LJ_001",
+                name: "移动紫外灯车④",
+                devType: "紫外灯车",
+                assetCode: "FA-2023-0094",
+                devCode: "LJ-01-001",
+                templateType: "tpl_uv",
+                templateName: "紫外线消毒照射记录",
+                frequency: "每日一次",
+                allowBatch: true
+            },
+            {
+                id: "DEV_DIFF_999",
+                name: "组织脱水机①",
+                devType: "组织脱水机",
+                assetCode: "FA-DIFF-999",
+                devCode: "DEV-TS-001",
+                templateType: "tpl_pathology",
+                templateName: "病理组织脱水/包埋使用记录",
+                frequency: "每批次一次",
+                allowBatch: true
+            },
+            {
+                id: "DEV_PRECISION_01",
+                name: "精密基因分析仪",
+                devType: "PCR基因扩增仪",
+                assetCode: "FA-2025-9001",
+                devCode: "GENE-9001",
+                templateType: "tpl_single",
+                templateName: "精密质控专属校准",
+                frequency: "每月一次",
+                allowBatch: false // 特殊单台录入模板：不支持批量填入
+            }
+        ];
+
+        // 当前状态
+        let currentRecordType = "use_uv";
+        let selectedDeviceIds = ["DEV_PCR_301"]; // 默认选中首台超净工作台
+        let lockedTemplateType = "tpl_cleanbench"; // 锁定超净工作台运行记录模板
+        let currentFilterType = "ALL";
+        let searchKeyword = "";
+
+        // 文件上传列表 (贴近检验/病理实验室设备真实业务场景凭证)
+        let uploadedFileList = [
+            {
+                id: "f1",
+                name: "超净工作台与PCR室日常运行消毒记录单_江苏省人民医院.docx",
+                type: "docx",
+                status: "已上传"
+            },
+            {
+                id: "f2",
+                name: "医用低温箱温度连续监控曲线纸(高拍仪扫描件).png",
+                type: "png",
+                status: "已上传"
+            },
+            {
+                id: "f3",
+                name: "生物安全柜高效过滤器风速检测原始凭证_江苏省人民医院.pdf",
+                type: "pdf",
+                status: "已上传"
+            },
+            {
+                id: "f4",
+                name: "设备现场运行指示与仪表校准核对表.docx",
+                type: "docx",
+                status: "未上传"
+            }
+        ];
+
+        window.addEventListener("DOMContentLoaded", () => {
+            renderDeviceCards();
+            updateSubtotalInfo();
+            updateHeaderTitle();
+            updateBannerInfo();
+            renderDynamicForm();
+            renderUploadedFiles();
+        });
+
+        // 切换业务记录模板 (模拟不同外部调用场景)
+        function switchRecordTemplate(val) {
+            currentRecordType = val;
+            const bannerTitle = document.getElementById("tplBannerTitle");
+            const tplFreqText = document.getElementById("tplFreqText");
+            const apiUrl = document.getElementById("simApiUrlDisplay");
+
+            if (val === "use_uv") {
+                currentRecordTypeName = "运行";
+                selectedDeviceIds = ["DEV_PCR_301"];
+                lockedTemplateType = "tpl_standard";
+                apiUrl.textContent = "addRecord?recordTypr=use";
+            } else if (val === "use_pathology") {
+                currentRecordTypeName = "使用记录";
+                selectedDeviceIds = ["DEV_CJ_001"];
+                lockedTemplateType = "tpl_standard";
+                apiUrl.textContent = "addRecord?recordTypr=use";
+            } else if (val === "maintain") {
+                currentRecordTypeName = "维护记录";
+                apiUrl.textContent = "addRecord?recordTypr=maintain";
+            } else if (val === "calibrate") {
+                currentRecordTypeName = "校准记录";
+                apiUrl.textContent = "addRecord?recordTypr=calibrate";
+            }
+
+            renderDeviceCards();
+            updateSubtotalInfo();
+            updateHeaderTitle();
+            renderDynamicForm();
+            showToast("已切换记录类型与表单模板", "success");
+        }
+
+        // 设备类型单选下拉过滤
+        function handleDevTypeChange(val) {
+            currentFilterType = val;
+            renderDeviceCards();
+            updateSubtotalInfo();
+        }
+
+        // 模糊查询输入过滤
+        function handleSearchInput() {
+            searchKeyword = document.getElementById("devKeywordSearch").value.trim().toLowerCase();
+            renderDeviceCards();
+            updateSubtotalInfo();
+        }
+
+        // 渲染左侧设备卡片 (纯粹展示4大项信息：设备名称、设备类型、固定资产编号、设备编号)
+        function renderDeviceCards() {
+            const container = document.getElementById("deviceCardListContainer");
+
+            const filtered = mockDeviceDatabase.filter(d => {
+                const matchType = (currentFilterType === "ALL") || (d.devType === currentFilterType);
+                const matchKw = (!searchKeyword) || (d.name.toLowerCase().includes(searchKeyword) || d.devCode.toLowerCase().includes(searchKeyword));
+                return matchType && matchKw;
+            });
+
+            container.innerHTML = filtered.map(dev => {
+                const isSelected = selectedDeviceIds.includes(dev.id);
+                return `
+                    <div class="pc-dev-card ${isSelected ? 'active' : ''}" 
+                         id="card-${dev.id}" 
+                         onclick="handleToggleDevice('${dev.id}')">
+                        
+                        <!-- 选中态折角蓝色对勾 (1:1 截图) -->
+                        <div class="card-check-corner">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                        </div>
+
+                        <!-- 1. 设备名称 (加粗加黑 14px) -->
+                        <div class="dev-card-name" title="${dev.name}">${dev.name}</div>
+                        
+                        <!-- 2. 设备类型 -->
+                        <div class="dev-card-field-row">
+                            <span class="dev-card-field-label">设备类型:</span>
+                            <span class="dev-card-field-val">${dev.devType}</span>
+                        </div>
+                        <!-- 3. 固定资产编号 -->
+                        <div class="dev-card-field-row">
+                            <span class="dev-card-field-label">固定资产编号:</span>
+                            <span class="dev-card-field-val">${dev.assetCode || '-'}</span>
+                        </div>
+                        <!-- 4. 设备编号 (严格放在固定资产编号下方) -->
+                        <div class="dev-card-field-row">
+                            <span class="dev-card-field-label">设备编号:</span>
+                            <span class="dev-card-field-val">${dev.devCode}</span>
+                        </div>
+                    </div>
+                `;
+            }).join("");
+        }
+
+        // 一键清空所有已选设备
+        function handleClearAllDevices() {
+            selectedDeviceIds = [];
+            lockedTemplateType = null;
+            renderDeviceCards();
+            updateSubtotalInfo();
+            updateHeaderTitle();
+            updateBannerInfo();
+            renderDynamicForm();
+            showToast("已清空所选设备", "success");
+        }
+
+        // ================= 设备卡片点击选择与批量自动判断 =================
+        function handleToggleDevice(deviceId) {
+            const targetDev = mockDeviceDatabase.find(d => d.id === deviceId);
+            if (!targetDev) return;
+
+            const isAlreadySelected = selectedDeviceIds.includes(deviceId);
+
+            if (isAlreadySelected) {
+                // 允许反选取消当前设备，不再死锁！反选后可以清空至 0 台
+                selectedDeviceIds = selectedDeviceIds.filter(id => id !== deviceId);
+                if (selectedDeviceIds.length === 0) {
+                    lockedTemplateType = null;
+                }
+            } else {
+                if (selectedDeviceIds.length === 0) {
+                    // 当前未选择任何设备，直接选中目标设备
+                    selectedDeviceIds = [deviceId];
+                    lockedTemplateType = targetDev.templateType;
+                } else {
+                    const firstDev = mockDeviceDatabase.find(d => selectedDeviceIds.includes(d.id)) || mockDeviceDatabase[0];
+
+                    // 阶段 1：校验当前模板或目标设备是否支持批量录入 (allowBatch)
+                    if (!firstDev.allowBatch || !targetDev.allowBatch) {
+                        const cardEl = document.getElementById(`card-${deviceId}`);
+                        if (cardEl) {
+                            cardEl.classList.add("shake-animation");
+                            setTimeout(() => cardEl.classList.remove("shake-animation"), 400);
+                        }
+                        showToast("当前记录类型仅支持单台设备录入，不支持批量填入", "warning");
+                        return;
+                    }
+
+                    // 阶段 2：校验设备记录模板是否一致 (不同模板严禁合并多选，必须 Toast 警示拦截)
+                    if (targetDev.templateType !== lockedTemplateType) {
+                        const cardEl = document.getElementById(`card-${deviceId}`);
+                        if (cardEl) {
+                            cardEl.classList.add("shake-animation");
+                            setTimeout(() => cardEl.classList.remove("shake-animation"), 400);
+                        }
+                        showToast(`【${firstDev.name}】与【${targetDev.name}】记录模板不同，请选择相同记录模板的设备`, "warning");
+                        return;
+                    }
+
+                    // 校验通过：同类型同模板设备，支持批量追加多选
+                    selectedDeviceIds.push(deviceId);
+                }
+            }
+
+            renderDeviceCards();
+            updateSubtotalInfo();
+            updateHeaderTitle();
+            updateBannerInfo();
+            renderDynamicForm();
+        }
+
+        // 全选 / 取消全选操作 (支持取消全选时彻底清空)
+        function handleToggleSelectAll(checked) {
+            const selectAllCb = document.getElementById("selectAllCheckbox");
+            if (!checked) {
+                // 取消全选：彻底清空已选设备
+                selectedDeviceIds = [];
+                lockedTemplateType = null;
+                showToast("已清空所选设备", "success");
+            } else {
+                const targetTpl = lockedTemplateType || (mockDeviceDatabase[0] ? mockDeviceDatabase[0].templateType : null);
+                const sampleDev = mockDeviceDatabase.find(d => d.templateType === targetTpl) || mockDeviceDatabase[0];
+                
+                // 校验 1：如果当前模板不支持批量，则禁止全选多台
+                if (sampleDev && !sampleDev.allowBatch) {
+                    if (selectAllCb) selectAllCb.checked = false;
+                    showToast("当前记录类型仅支持单台设备录入，不支持批量填入", "warning");
+                    return;
+                }
+
+                const sameTplDevs = mockDeviceDatabase.filter(d => (!targetTpl || d.templateType === targetTpl) && d.allowBatch !== false);
+                selectedDeviceIds = sameTplDevs.map(d => d.id);
+                if (sameTplDevs.length > 0) {
+                    lockedTemplateType = sameTplDevs[0].templateType;
+                }
+
+                const diffCount = mockDeviceDatabase.length - sameTplDevs.length;
+                if (diffCount > 0) {
+                    showToast("已全选同模板设备，不同模板设备已自动排除", "warning");
+                } else {
+                    showToast(`已全选当前列表所有设备共 ${sameTplDevs.length} 台`, "success");
+                }
+            }
+            renderDeviceCards();
+            updateSubtotalInfo();
+            updateHeaderTitle();
+            updateBannerInfo();
+            renderDynamicForm();
+        }
+
+        // 更新左侧数值小计与清空操作按钮状态
+        function updateSubtotalInfo() {
+            const countEl = document.getElementById("leftSubtotalInfo");
+            const selectAllCb = document.getElementById("selectAllCheckbox");
+            const clearBtn = document.getElementById("clearAllDevLink");
+            const currentCount = selectedDeviceIds.length;
+
+            if (countEl) countEl.innerHTML = `已选 <strong>${currentCount}</strong> 台`;
+            if (clearBtn) clearBtn.style.display = (currentCount > 0) ? "inline" : "none";
+
+            if (selectAllCb) {
+                const targetTpl = lockedTemplateType || (mockDeviceDatabase[0] ? mockDeviceDatabase[0].templateType : null);
+                const sameTplDevs = mockDeviceDatabase.filter(d => (!targetTpl || d.templateType === targetTpl) && d.allowBatch !== false);
+                const isAllSelected = sameTplDevs.length > 0 && currentCount === sameTplDevs.length && sameTplDevs.every(d => selectedDeviceIds.includes(d.id));
+                selectAllCb.checked = isAllSelected;
+                selectAllCb.indeterminate = (!isAllSelected && currentCount > 0);
+            }
+        }
+
+        // 更新顶部弹窗标题：铁令固定为【新增记录】，不随设备变化
+        function updateHeaderTitle() {
+            const titleEl = document.getElementById("pageHeaderTitle");
+            if (titleEl) {
+                titleEl.textContent = "新增记录";
+            }
+        }
+
+        // 外部系统传入的记录类型名称 (纯粹模板类型名，如“运行”、“使用记录”、“维护记录”、“校准记录”，绝不展示“xx设备使用记录”)
+        let currentRecordTypeName = "运行";
+
+        // 动态更新记录模板横幅 (顶部始终展示记录模板类型；未选中设备时仅展示类型名，不展示频次)
+        function updateBannerInfo() {
+            const bannerTitle = document.getElementById("tplBannerTitle");
+            const tplBannerFreq = document.getElementById("tplBannerFreq");
+            const tplFreqText = document.getElementById("tplFreqText");
+            if (!bannerTitle || !tplFreqText || !tplBannerFreq) return;
+
+            // 1. 顶部始终展示纯粹的记录模板类型名称，绝对不出现“xx设备使用记录”或“未选择设备”
+            bannerTitle.textContent = currentRecordTypeName;
+
+            // 2. 未选中设备时：右侧频次不展示
+            if (selectedDeviceIds.length === 0) {
+                tplBannerFreq.style.display = "none";
+                return;
+            }
+
+            // 3. 选中设备时：展示该设备绑定的标准填报频次
+            tplBannerFreq.style.display = "inline-flex";
+            const firstDev = mockDeviceDatabase.find(d => selectedDeviceIds.includes(d.id)) || mockDeviceDatabase[0];
+            tplFreqText.textContent = firstDev.frequency || "使用时需要";
+        }
+
+        // ================= 渲染右侧动态表单 (未选设备时仅展示文字，底部无按钮；勾选后唤出全部) =================
+        function renderDynamicForm() {
+            const container = document.getElementById("dynamicFormContainer");
+            const attachWrap = document.getElementById("attachmentSectionWrap");
+            const footerBar = document.getElementById("pcModalFooter");
+            if (!container) return;
+
+            // 1. 如果已选设备为 0（未选中设备）：仅展示文字“请选择需要填报记录的设备”，收起附件区与底部按钮栏
+            if (selectedDeviceIds.length === 0) {
+                if (attachWrap) attachWrap.style.display = "none";
+                if (footerBar) footerBar.style.display = "none";
+
+                container.innerHTML = `
+                    <div class="form-empty-state" style="padding: 130px 20px;">
+                        <div class="empty-state-title" style="font-weight: 400; color: #909399; font-size: 14px;">请选择需要填报记录的设备</div>
+                    </div>
+                `;
+                return;
+            }
+
+            // 2. 有选中设备时：恢复附件资料区与底部按钮栏
+            if (attachWrap) attachWrap.style.display = "block";
+            if (footerBar) footerBar.style.display = "flex";
+
+            const now = new Date();
+            const timeStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+            const dateStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+
+            // 当前选中的设备模板
+            const firstDev = mockDeviceDatabase.find(d => selectedDeviceIds.includes(d.id)) || mockDeviceDatabase[0];
+            const currentTpl = lockedTemplateType || (firstDev ? firstDev.templateType : "tpl_cleanbench");
+
+            if (currentTpl === "tpl_fridge") {
+                // 医用低温箱 / 冷藏箱 (冰箱类) 温湿度监控专用表单
+                container.innerHTML = `
+                    <div class="form-grid-3col">
+                        <div class="form-item">
+                            <label class="form-label required">记录时间</label>
+                            <div class="form-control-wrap">
+                                <input type="text" class="form-input" value="${timeStr}" readonly>
+                            </div>
+                        </div>
+                        <div class="form-item">
+                            <label class="form-label required">记录人</label>
+                            <div class="form-control-wrap">
+                                <input type="text" class="form-input" value="李珂02" readonly>
+                            </div>
+                        </div>
+                        <div class="form-item">
+                            <label class="form-label required">箱内当前温度(℃)</label>
+                            <div class="form-control-wrap">
+                                <input type="text" class="form-input" value="4.2" placeholder="请输入实时测定温度">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-grid-3col">
+                        <div class="form-item">
+                            <label class="form-label">设定目标温度(℃)</label>
+                            <div class="form-control-wrap">
+                                <input type="text" class="form-input" value="4.0" placeholder="设定温度">
+                            </div>
+                        </div>
+                        <div class="form-item">
+                            <label class="form-label required">温控显示是否正常</label>
+                            <div class="form-control-wrap">
+                                <div class="radio-options-group">
+                                    <label class="radio-item-label"><input type="radio" name="f_disp" value="是" checked><span>是</span></label>
+                                    <label class="radio-item-label"><input type="radio" name="f_disp" value="否"><span>否</span></label>
+                                </div>
+                                <a href="javascript:void(0)" class="clear-link-btn" onclick="clearRadioGroup('f_disp')">清空</a>
+                            </div>
+                        </div>
+                        <div class="form-item">
+                            <label class="form-label required">冷凝结霜/化霜状态</label>
+                            <div class="form-control-wrap">
+                                <div class="radio-options-group">
+                                    <label class="radio-item-label"><input type="radio" name="f_frost" value="正常" checked><span>正常</span></label>
+                                    <label class="radio-item-label"><input type="radio" name="f_frost" value="需除霜"><span>需除霜</span></label>
+                                </div>
+                                <a href="javascript:void(0)" class="clear-link-btn" onclick="clearRadioGroup('f_frost')">清空</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-grid-3col">
+                        <div class="form-item">
+                            <label class="form-label required">门封条密封状态</label>
+                            <div class="form-control-wrap">
+                                <div class="radio-options-group">
+                                    <label class="radio-item-label"><input type="radio" name="f_seal" value="良好" checked><span>良好</span></label>
+                                    <label class="radio-item-label"><input type="radio" name="f_seal" value="松动"><span>松动</span></label>
+                                </div>
+                                <a href="javascript:void(0)" class="clear-link-btn" onclick="clearRadioGroup('f_seal')">清空</a>
+                            </div>
+                        </div>
+                        <div class="form-item">
+                            <label class="form-label">超温报警核验</label>
+                            <div class="form-control-wrap">
+                                <div class="radio-options-group">
+                                    <label class="radio-item-label"><input type="radio" name="f_alarm" value="正常" checked><span>正常</span></label>
+                                    <label class="radio-item-label"><input type="radio" name="f_alarm" value="异常"><span>异常</span></label>
+                                </div>
+                                <a href="javascript:void(0)" class="clear-link-btn" onclick="clearRadioGroup('f_alarm')">清空</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-grid-1col">
+                        <div class="form-item align-top">
+                            <label class="form-label">备注</label>
+                            <div class="form-control-wrap">
+                                <textarea class="form-textarea">箱内温度受控在规定范围，门封严实，试剂/标本暂存环境合规。</textarea>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (currentTpl === "tpl_pathology") {
+                // 病理组织脱水/包埋机表单
+                container.innerHTML = `
+                    <div class="form-grid-3col">
+                        <div class="form-item">
+                            <label class="form-label required">使用时间</label>
+                            <div class="form-control-wrap">
+                                <input type="text" class="form-input" value="${timeStr}">
+                            </div>
+                        </div>
+                        <div class="form-item">
+                            <label class="form-label required">操作人</label>
+                            <div class="form-control-wrap">
+                                <input type="text" class="form-input" value="李珂02">
+                            </div>
+                        </div>
+                        <div class="form-item">
+                            <label class="form-label required">设备是否正常</label>
+                            <div class="form-control-wrap">
+                                <div class="radio-options-group">
+                                    <label class="radio-item-label"><input type="radio" name="p_normal" value="是" checked><span>是</span></label>
+                                    <label class="radio-item-label"><input type="radio" name="p_normal" value="否"><span>否</span></label>
+                                </div>
+                                <a href="javascript:void(0)" class="clear-link-btn" onclick="clearRadioGroup('p_normal')">清空</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-grid-3col">
+                        <div class="form-item">
+                            <label class="form-label">是否新添加石蜡</label>
+                            <div class="form-control-wrap">
+                                <div class="radio-options-group">
+                                    <label class="radio-item-label"><input type="radio" name="p_wax" value="是" checked><span>是</span></label>
+                                    <label class="radio-item-label"><input type="radio" name="p_wax" value="否"><span>否</span></label>
+                                </div>
+                                <a href="javascript:void(0)" class="clear-link-btn" onclick="clearRadioGroup('p_wax')">清空</a>
+                            </div>
+                        </div>
+                        <div class="form-item">
+                            <label class="form-label">是否清洁消毒</label>
+                            <div class="form-control-wrap">
+                                <div class="radio-options-group">
+                                    <label class="radio-item-label"><input type="radio" name="p_clean" value="是" checked><span>是</span></label>
+                                    <label class="radio-item-label"><input type="radio" name="p_clean" value="否"><span>否</span></label>
+                                </div>
+                                <a href="javascript:void(0)" class="clear-link-btn" onclick="clearRadioGroup('p_clean')">清空</a>
+                            </div>
+                        </div>
+                        <div class="form-item">
+                            <label class="form-label">病理号/批次</label>
+                            <div class="form-control-wrap">
+                                <input type="text" class="form-input" value="2026-BL-0982">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-grid-1col">
+                        <div class="form-item align-top">
+                            <label class="form-label">备注</label>
+                            <div class="form-control-wrap">
+                                <textarea class="form-textarea">脱水机运行正常，各试剂缸液位正常，排风通畅。</textarea>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (currentTpl === "tpl_single") {
+                // 精密仪器专属校准表单
+                container.innerHTML = `
+                    <div class="form-grid-3col">
+                        <div class="form-item">
+                            <label class="form-label required">校准时间</label>
+                            <div class="form-control-wrap">
+                                <input type="text" class="form-input" value="${timeStr}">
+                            </div>
+                        </div>
+                        <div class="form-item">
+                            <label class="form-label required">校准人员</label>
+                            <div class="form-control-wrap">
+                                <input type="text" class="form-input" value="李珂02">
+                            </div>
+                        </div>
+                        <div class="form-item">
+                            <label class="form-label required">校准结果</label>
+                            <div class="form-control-wrap">
+                                <div class="radio-options-group">
+                                    <label class="radio-item-label"><input type="radio" name="cal_res" value="合格" checked><span>合格</span></label>
+                                    <label class="radio-item-label"><input type="radio" name="cal_res" value="不合格"><span>不合格</span></label>
+                                </div>
+                                <a href="javascript:void(0)" class="clear-link-btn" onclick="clearRadioGroup('cal_res')">清空</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-grid-3col">
+                        <div class="form-item">
+                            <label class="form-label">环境温度(℃)</label>
+                            <div class="form-control-wrap">
+                                <input type="text" class="form-input" value="22.4">
+                            </div>
+                        </div>
+                        <div class="form-item">
+                            <label class="form-label">相对湿度(%RH)</label>
+                            <div class="form-control-wrap">
+                                <input type="text" class="form-input" value="48">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-grid-1col">
+                        <div class="form-item align-top">
+                            <label class="form-label">详细校准备注</label>
+                            <div class="form-control-wrap">
+                                <textarea class="form-textarea">光学系统基线校准合格，激发光源能量衰减率在允许标准差范围内。</textarea>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                // 默认 / PCR超净工作台 (完整复刻真机截图2与截图3经典字典组件体系)
+                container.innerHTML = `
+                    <div class="form-grid-3col">
+                        <div class="form-item">
+                            <label class="form-label required">操作时间</label>
+                            <div class="form-control-wrap">
+                                <input type="text" class="form-input" id="field_opt_time" value="${timeStr}">
+                            </div>
+                        </div>
+                        <div class="form-item">
+                            <label class="form-label required">操作人</label>
+                            <div class="form-control-wrap">
+                                <input type="text" class="form-input" id="field_operator" value="李珂02">
+                            </div>
+                        </div>
+                        <div class="form-item">
+                            <label class="form-label">文本框</label>
+                            <div class="form-control-wrap">
+                                <input type="text" class="form-input" id="field_text1" value="文本框默认值" placeholder="请输入内容">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-grid-3col">
+                        <div class="form-item">
+                            <label class="form-label">日期框</label>
+                            <div class="form-control-wrap">
+                                <input type="date" class="form-input" id="field_date1" value="${dateStr}">
+                            </div>
+                        </div>
+                        <div class="form-item">
+                            <label class="form-label">数字框</label>
+                            <div class="form-control-wrap">
+                                <input type="number" class="form-input" id="field_num1" value="8" min="0" max="999">
+                            </div>
+                        </div>
+                        <div class="form-item">
+                            <label class="form-label">下拉框</label>
+                            <div class="form-control-wrap">
+                                <select class="form-select" id="field_select1">
+                                    <option value="下拉值1" selected>下拉值1</option>
+                                    <option value="下拉值2">下拉值2</option>
+                                    <option value="下拉值3">下拉值3</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-grid-1col">
+                        <div class="form-item align-top">
+                            <label class="form-label">多行文本框</label>
+                            <div class="form-control-wrap">
+                                <textarea class="form-textarea" id="field_multiline" placeholder="多行文本框">工作台面使用70%乙醇擦拭消毒，紫外照射30分钟，风机运行正常。</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-grid-3col">
+                        <div class="form-item">
+                            <label class="form-label">日期时间框</label>
+                            <div class="form-control-wrap">
+                                <input type="text" class="form-input" id="field_datetime_str" value="2025-08-13 10:38:00">
+                            </div>
+                        </div>
+                        <div class="form-item">
+                            <label class="form-label">单选框</label>
+                            <div class="form-control-wrap">
+                                <div class="radio-options-group">
+                                    <label class="radio-item-label"><input type="radio" name="r_opt1" value="单选框1" checked><span>单选框1</span></label>
+                                </div>
+                                <a href="javascript:void(0)" class="clear-link-btn" onclick="clearRadioGroup('r_opt1')">清空</a>
+                            </div>
+                        </div>
+                        <div class="form-item">
+                            <label class="form-label">单选框1</label>
+                            <div class="form-control-wrap">
+                                <div class="radio-options-group">
+                                    <label class="radio-item-label"><input type="radio" name="r_comm" value="当面沟通"><span>当面沟通</span></label>
+                                    <label class="radio-item-label"><input type="radio" name="r_comm" value="电话"><span>电话</span></label>
+                                    <label class="radio-item-label"><input type="radio" name="r_comm" value="微信"><span>微信</span></label>
+                                </div>
+                                <a href="javascript:void(0)" class="clear-link-btn" onclick="clearRadioGroup('r_comm')">清空</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-grid-2col">
+                        <div class="form-item">
+                            <label class="form-label">多选框</label>
+                            <div class="form-control-wrap">
+                                <select class="form-select" id="field_multiselect1">
+                                    <option value="多选框1">多选框1</option>
+                                    <option value="多选框2">多选框2</option>
+                                    <option value="多选框3">多选框3</option>
+                                </select>
+                                <a href="javascript:void(0)" class="clear-link-btn" onclick="document.getElementById('field_multiselect1').selectedIndex = -1">清空</a>
+                            </div>
+                        </div>
+                        <div class="form-item">
+                            <label class="form-label">多选框3</label>
+                            <div class="form-control-wrap">
+                                <select class="form-select" id="field_multiselect3">
+                                    <option value="短信">短信</option>
+                                    <option value="系统弹窗">系统弹窗</option>
+                                    <option value="邮件通知">邮件通知</option>
+                                </select>
+                                <a href="javascript:void(0)" class="clear-link-btn" onclick="document.getElementById('field_multiselect3').selectedIndex = -1">清空</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-grid-3col">
+                        <div class="form-item">
+                            <label class="form-label">单选框4</label>
+                            <div class="form-control-wrap">
+                                <div class="radio-options-group">
+                                    <label class="radio-item-label"><input type="radio" name="r_switch" value="开机" checked><span>开机</span></label>
+                                    <label class="radio-item-label"><input type="radio" name="r_switch" value="关机"><span>关机</span></label>
+                                </div>
+                                <a href="javascript:void(0)" class="clear-link-btn" onclick="clearRadioGroup('r_switch')">清空</a>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // ================= 渲染上传文件列表 (1:1 像素级复刻最新截图) =================
+        function renderUploadedFiles() {
+            const container = document.getElementById("uploadedFilesContainer");
+            if (!container) return;
+
+            if (uploadedFileList.length === 0) {
+                container.innerHTML = `
+                    <div style="padding: 12px 0; color: #909399; font-size: 13px;">暂无附件</div>
+                `;
+                return;
+            }
+
+            container.innerHTML = uploadedFileList.map(f => `
+                <div class="file-row-item" id="file_row_${f.id}">
+                    <!-- 文件类型大图标 (1:1 复刻截图：Word大W、PNG山峰太阳、PDF折线) -->
+                    <div class="file-icon-box">
+                        ${getFileIconSvg(f.type)}
+                    </div>
+
+                    <!-- 文件名 (定宽 320px，单行溢出省略) -->
+                    <div class="file-title-wrap" title="${f.name}">
+                        <span class="file-title-text">${f.name}</span>
+                    </div>
+
+                    <!-- 上传状态胶囊标签 (严格垂直对齐) -->
+                    <span class="file-upload-status-badge ${f.status === '已上传' ? 'uploaded' : ''}">${f.status}</span>
+
+                    <!-- 红色实心删除按钮 (紧跟在状态徽标右侧靠左放置，margin-left: 48px) -->
+                    <button type="button" class="file-row-delete-btn" onclick="handleDeleteFile('${f.id}')">删除</button>
+                </div>
+            `).join("");
+        }
+
+        function getFileIconSvg(type) {
+            if (type === "docx" || type === "doc") {
+                return `
+                    <svg width="34" height="40" viewBox="0 0 34 40" fill="none">
+                        <path d="M2 2H22L32 12V38H2V2Z" stroke="#222222" stroke-width="2" fill="#FFFFFF"/>
+                        <path d="M22 2V12H32" stroke="#222222" stroke-width="2"/>
+                        <text x="17" y="29" font-family="'Helvetica Neue', Arial, sans-serif" font-weight="900" font-size="16" fill="#222222" text-anchor="middle">W</text>
+                    </svg>
+                `;
+            } else if (type === "png" || type === "jpg" || type === "jpeg") {
+                return `
+                    <svg width="34" height="40" viewBox="0 0 34 40" fill="none">
+                        <path d="M2 2H22L32 12V38H2V2Z" stroke="#222222" stroke-width="2" fill="#FFFFFF"/>
+                        <path d="M22 2V12H32" stroke="#222222" stroke-width="2"/>
+                        <circle cx="11" cy="20" r="3" fill="#222222"/>
+                        <path d="M7 32L14 23L20 30L23 26L27 32H7Z" fill="#222222"/>
+                    </svg>
+                `;
+            } else {
+                return `
+                    <svg width="34" height="40" viewBox="0 0 34 40" fill="none">
+                        <path d="M2 2H22L32 12V38H2V2Z" stroke="#222222" stroke-width="2" fill="#FFFFFF"/>
+                        <path d="M22 2V12H32" stroke="#222222" stroke-width="2"/>
+                        <path d="M12 28C10 24 13 20 17 21C21 22 22 28 20 28C18 28 16 23 18 19C19 17 20 18 20 19" stroke="#222222" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                `;
+            }
+        }
+
+        function handleDeleteFile(fileId) {
+            uploadedFileList = uploadedFileList.filter(f => f.id !== fileId);
+            renderUploadedFiles();
+            showToast("已删除选中的附件", "success");
+        }
+
+        function mockCameraScan() {
+            showToast("正在连接高拍仪拍摄扫查...", "success");
+            setTimeout(() => {
+                const newId = "scan_" + Date.now();
+                uploadedFileList.push({
+                    id: newId,
+                    name: `高拍仪现场原始巡检单_${Date.now().toString().slice(-4)}.png`,
+                    type: "png",
+                    status: "已上传"
+                });
+                renderUploadedFiles();
+                showToast("高拍仪扫描完成，已加入文件列表", "success");
+            }, 400);
+        }
+
+        function mockSelectFile() {
+            const newId = "file_" + Date.now();
+            uploadedFileList.push({
+                id: newId,
+                name: `设备定期维护与校准核查单_${Date.now().toString().slice(-4)}.pdf`,
+                type: "pdf",
+                status: "已上传"
+            });
+            renderUploadedFiles();
+            showToast("已选择并追加新文件", "success");
+        }
+
+        function clearRadioGroup(radioName) {
+            const radios = document.getElementsByName(radioName);
+            for (let r of radios) {
+                r.checked = false;
+            }
+        }
+
+        function handleSubmitForm() {
+            const count = selectedDeviceIds.length;
+            if (count === 0) {
+                showToast("请选择需要填报记录的设备", "warning");
+                return;
+            }
+            showToast(`✓ 保存成功！已为所选的 ${count} 台设备写入历史台账。`, "success");
+        }
+
+        function handleCloseModal() {
+            if (confirm("确定关闭当前录入页面吗？未保存的数据可能会丢失。")) {
+                showToast("已向外部系统发送关闭回调 (closeDialog)", "success");
+            }
+        }
+
+        let toastTimer = null;
+        function showToast(msg, type = "warning") {
+            const toast = document.getElementById("toastNotify");
+            const toastIconWrap = document.getElementById("toastIconWrap");
+            const toastMsg = document.getElementById("toastMsg");
+
+            if (toastTimer) clearTimeout(toastTimer);
+
+            if (toastMsg) toastMsg.textContent = msg;
+            if (toast) toast.className = `toast-notify show ${type}`;
+
+            if (toastIconWrap) {
+                if (type === "success") {
+                    toastIconWrap.innerHTML = `
+                        <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
+                            <circle cx="8" cy="8" r="8" fill="#52c41a"/>
+                            <path d="M4.5 8l2.5 2.5 4.5-4.5" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    `;
+                } else {
+                    toastIconWrap.innerHTML = `
+                        <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
+                            <circle cx="8" cy="8" r="8" fill="#e6a23c"/>
+                            <path d="M8 3.8v5.2M8 11.2v1" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round"/>
+                        </svg>
+                    `;
+                }
+            }
+
+            toastTimer = setTimeout(() => {
+                hideToast();
+            }, 3000);
+        }
+
+        function hideToast() {
+            const toast = document.getElementById("toastNotify");
+            if (toast) toast.classList.remove("show");
+        }
+
+        window.addEventListener("keydown", (e) => {
+            if (e.key === "Escape") {
+                handleCloseModal();
+            }
+        });
+    </script>
+</body>
+
+</html>
