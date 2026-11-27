@@ -512,18 +512,36 @@
             border-radius: 1px;
         }
 
-        .tpl-banner-frequency {
-            color: var(--color-primary);
-            font-size: 13.5px;
+        /* 记录周期频次与状态提示徽章 (单条与批量统一规范) */
+        .tpl-cycle-status-pill {
+            font-size: 13px;
+            padding: 2px 10px;
+            border-radius: 4px;
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            font-weight: 500;
         }
 
-        .tpl-freq-icon {
-            flex-shrink: 0;
-            width: 14px;
-            height: 14px;
+        .tpl-cycle-status-pill.badge-status-empty,
+        .batch-card-cycle-pill.badge-status-empty {
+            background: #f2f3f5;
+            color: #4e5969;
+            border: 1px solid #e5e6eb;
+        }
+
+        .tpl-cycle-status-pill.badge-status-recorded,
+        .batch-card-cycle-pill.badge-status-recorded {
+            background: #e8ffea;
+            color: #00b42a;
+            border: 1px solid #aff0b5;
+        }
+
+        .batch-card-cycle-pill {
+            font-size: 12px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: 500;
+            white-space: nowrap;
         }
 
         /* 表单内容滚动区域 (统一 16px 舒展间距) */
@@ -1394,8 +1412,9 @@
 
                 <!-- 记录模板横幅：标题、频次、模式切换入口【单条录入】/【一键批量】 -->
                 <div class="record-template-banner">
-                    <div style="display: flex; align-items: center; gap: 16px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
                         <div class="tpl-banner-title" id="tplBannerTitle">运行</div>
+                        <div class="tpl-cycle-status-pill" id="tplCycleStatusPill" style="display:none;"></div>
                     </div>
 
                     <!-- 模式切换入口：【单条录入】 / 【一键批量】 -->
@@ -1633,8 +1652,38 @@
             showToast("已切换记录类型与表单模板", "success");
         }
 
-        // 设备类型单选下拉过滤
-        // 渲染左侧设备卡片 (展示5大项信息：设备名称、固定资产编号、设备编号、所属工作台、设备类型)
+        // 获取设备在当前记录周期的频次与执行状态文案（无记录 / 已有N条记录）
+        function getRecordCycleStatus(dev) {
+            if (!dev) return { text: "", badgeClass: "" };
+            const freq = dev.frequency || "使用时需要";
+            const count = dev.recordCount || 0;
+            let periodText = "当天";
+            if (freq.includes("周")) {
+                periodText = "本周";
+            } else if (freq.includes("月")) {
+                periodText = "本月";
+            } else if (freq.includes("使用") || freq.includes("批次")) {
+                periodText = "当前";
+            }
+
+            if (count <= 0) {
+                return {
+                    hasRecord: false,
+                    freq: freq,
+                    text: `${freq} · ${periodText}无记录`,
+                    badgeClass: "badge-status-empty"
+                };
+            } else {
+                return {
+                    hasRecord: true,
+                    freq: freq,
+                    text: `${freq} · ${periodText}已有 ${count} 条记录`,
+                    badgeClass: "badge-status-recorded"
+                };
+            }
+        }
+
+        // 渲染左侧设备卡片 (展示5大项信息：设备名称、所属工作台、固定资产编号、设备编号、设备类型)
         function renderDeviceCards() {
             const container = document.getElementById("deviceCardListContainer");
             if (!container) return;
@@ -1653,25 +1702,25 @@
                             </svg>
                         </div>
 
-                        <!-- 1. 设备名称 (加粗加黑 15px) -->
+                        <!-- 1. 设备名称 (加粗 15px) -->
                         <div class="dev-card-name" title="${dev.name}">${dev.name}</div>
                         
-                        <!-- 2. 固定资产编号 -->
+                        <!-- 2. 所属工作台 (醒目排在第2行) -->
+                        <div class="dev-card-field-row">
+                            <span class="dev-card-field-label">所属工作台:</span>
+                            <span class="dev-card-field-val">${dev.workstation || '基础工作台'}</span>
+                        </div>
+
+                        <!-- 3. 固定资产编号 -->
                         <div class="dev-card-field-row">
                             <span class="dev-card-field-label">固定资产编号:</span>
                             <span class="dev-card-field-val">${dev.assetCode}</span>
                         </div>
 
-                        <!-- 3. 设备编号 -->
+                        <!-- 4. 设备编号 -->
                         <div class="dev-card-field-row">
                             <span class="dev-card-field-label">设备编号:</span>
                             <span class="dev-card-field-val">${dev.devCode}</span>
-                        </div>
-
-                        <!-- 4. 所属工作台 -->
-                        <div class="dev-card-field-row">
-                            <span class="dev-card-field-label">所属工作台:</span>
-                            <span class="dev-card-field-val">${dev.workstation || '基础工作台'}</span>
                         </div>
 
                         <!-- 5. 设备类型 -->
@@ -1802,8 +1851,26 @@
         // 动态更新记录模板横幅 (顶部展示记录模板类型)
         function updateBannerInfo() {
             const bannerTitle = document.getElementById("tplBannerTitle");
+            const statusPill = document.getElementById("tplCycleStatusPill");
             if (bannerTitle) {
                 bannerTitle.textContent = currentRecordTypeName;
+            }
+            if (statusPill) {
+                // 单条录入模式且有选中设备时展示周期提醒
+                if (currentEntryMode === "single" && selectedDeviceIds.length > 0) {
+                    const dev = mockDeviceDatabase.find(d => selectedDeviceIds.includes(d.id));
+                    if (dev) {
+                        const statusObj = getRecordCycleStatus(dev);
+                        statusPill.style.display = "inline-flex";
+                        statusPill.className = `tpl-cycle-status-pill ${statusObj.badgeClass}`;
+                        statusPill.textContent = statusObj.text;
+                    } else {
+                        statusPill.style.display = "none";
+                    }
+                } else {
+                    // 批量模式或未选设备时隐藏顶部单条pill（批量模式在每张设备卡片标题栏展示）
+                    statusPill.style.display = "none";
+                }
             }
         }
 
@@ -1876,20 +1943,26 @@
                 container.innerHTML = `
                     <!-- 所有设备批量写入清单 (纯只读两栏展示) -->
                     <div class="batch-cards-list">
-                        ${selectedDevs.map((dev, idx) => `
-                            <div class="batch-dev-value-card">
-                                <div class="batch-card-top-bar">
-                                    <div class="batch-card-name">
-                                        <span>${idx + 1}. ${dev.name}</span>
-                                        <span class="batch-card-meta">类型: ${dev.devType}</span>
-                                        <span class="batch-card-meta">编号: ${dev.devCode}</span>
+                        ${selectedDevs.map((dev, idx) => {
+                            const statusObj = getRecordCycleStatus(dev);
+                            return `
+                                <div class="batch-dev-value-card">
+                                    <div class="batch-card-top-bar">
+                                        <div class="batch-card-name">
+                                            <span>${idx + 1}. ${dev.name}</span>
+                                            <span class="batch-card-meta">工作台: ${dev.workstation || '基础工作台'}</span>
+                                            <span class="batch-card-meta">编号: ${dev.devCode}</span>
+                                        </div>
+                                        <div class="batch-card-cycle-pill ${statusObj.badgeClass}">
+                                            ${statusObj.text}
+                                        </div>
+                                    </div>
+                                    <div class="batch-card-values-grid">
+                                        ${renderBatchDeviceValues(dev)}
                                     </div>
                                 </div>
-                                <div class="batch-card-values-grid">
-                                    ${renderBatchDeviceValues(dev)}
-                                </div>
-                            </div>
-                        `).join("")}
+                            `;
+                        }).join("")}
                     </div>
                 `;
                 return;
@@ -2474,11 +2547,24 @@
                 showToast("请选择需要填报记录的设备", "warning");
                 return;
             }
+
+            // 累加已选设备在当前周期的记录计数
+            selectedDeviceIds.forEach(id => {
+                const dev = mockDeviceDatabase.find(d => d.id === id);
+                if (dev) {
+                    dev.recordCount = (dev.recordCount || 0) + 1;
+                }
+            });
+
+            // 动态刷新顶部状态Pill与右侧看板
+            updateBannerInfo();
+            renderDynamicForm();
+
             if (currentEntryMode === "batch") {
-                showToast(`批量保存成功！已保存共 ${count} 台设备记录`, "success");
+                showToast(`批量保存成功！已保存共 ${count} 台设备记录，状态已更新`, "success");
             } else {
                 const dev = mockDeviceDatabase.find(d => selectedDeviceIds.includes(d.id));
-                showToast(`保存成功！已为【${dev ? dev.name : '设备'}】写入记录`, "success");
+                showToast(`保存成功！已为【${dev ? dev.name : '设备'}】写入记录，状态已更新`, "success");
             }
         }
 
