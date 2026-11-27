@@ -1396,13 +1396,6 @@
                 <div class="record-template-banner">
                     <div style="display: flex; align-items: center; gap: 16px;">
                         <div class="tpl-banner-title" id="tplBannerTitle">运行</div>
-                        <div class="tpl-banner-frequency" id="tplBannerFreq">
-                            <svg class="tpl-freq-icon" viewBox="0 0 16 16" width="14" height="14" fill="none">
-                                <circle cx="8" cy="8" r="8" fill="#009fe8"/>
-                                <path d="M8 3.5V8.5M8 11V12" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round"/>
-                            </svg>
-                            <span id="tplFreqText">使用时需要</span>
-                        </div>
                     </div>
 
                     <!-- 模式切换入口：【单条录入】 / 【一键批量】 -->
@@ -1614,10 +1607,7 @@
         // 切换业务记录模板 (模拟不同外部调用场景)
         function switchRecordTemplate(val) {
             currentRecordType = val;
-            const bannerTitle = document.getElementById("tplBannerTitle");
-            const tplFreqText = document.getElementById("tplFreqText");
             const apiUrl = document.getElementById("simApiUrlDisplay");
-
             if (val === "use_uv") {
                 currentRecordTypeName = "运行";
                 selectedDeviceIds = ["DEV_PCR_301"];
@@ -1809,26 +1799,12 @@
         // 外部系统传入的记录类型名称 (纯粹模板类型名，如“运行”、“使用记录”、“维护记录”、“校准记录”，绝不展示“xx设备使用记录”)
         let currentRecordTypeName = "运行";
 
-        // 动态更新记录模板横幅 (顶部始终展示记录模板类型；未选中设备时仅展示类型名，不展示频次)
+        // 动态更新记录模板横幅 (顶部展示记录模板类型)
         function updateBannerInfo() {
             const bannerTitle = document.getElementById("tplBannerTitle");
-            const tplBannerFreq = document.getElementById("tplBannerFreq");
-            const tplFreqText = document.getElementById("tplFreqText");
-            if (!bannerTitle || !tplFreqText || !tplBannerFreq) return;
-
-            // 1. 顶部始终展示纯粹的记录模板类型名称，绝对不出现“xx设备使用记录”或“未选择设备”
-            bannerTitle.textContent = currentRecordTypeName;
-
-            // 2. 未选中设备时：右侧频次不展示
-            if (selectedDeviceIds.length === 0) {
-                tplBannerFreq.style.display = "none";
-                return;
+            if (bannerTitle) {
+                bannerTitle.textContent = currentRecordTypeName;
             }
-
-            // 3. 选中设备时：展示该设备绑定的标准填报频次
-            tplBannerFreq.style.display = "inline-flex";
-            const firstDev = mockDeviceDatabase.find(d => selectedDeviceIds.includes(d.id)) || mockDeviceDatabase[0];
-            tplFreqText.textContent = firstDev.frequency || "使用时需要";
         }
 
         function switchEntryMode(mode) {
